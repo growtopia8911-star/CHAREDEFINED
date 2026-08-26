@@ -6,3 +6,8 @@
 
 # macOS
 .DS_Store
+
+# raw scrape intermediates — data/menu.json is the shipped output
+toast-*.json
+comp.html
+preview.html
