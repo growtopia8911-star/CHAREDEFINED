@@ -859,28 +859,6 @@ a{{color:inherit}}
 }}
 .map__link:hover{{border-bottom-color:var(--ink)}}
 
-/* ── our story ──────────────────────────────── */
-.story{{padding-block:var(--stack)}}
-.story__grid{{display:grid;gap:clamp(2rem,5vw,4rem);align-items:center}}
-@media(min-width:52rem){{.story__grid{{grid-template-columns:1.05fr .95fr}}}}
-.story h2{{
-  font-family:var(--serif);font-variant:small-caps;letter-spacing:.05em;
-  font-size:var(--s3);margin-bottom:1.25rem;
-}}
-.story__body{{display:flex;flex-direction:column;gap:1rem;color:var(--ink-2);max-width:52ch}}
-.story__body p{{font-size:1.0625rem;line-height:1.65}}
-.story__figure{{
-  aspect-ratio:4/5;
-  background:var(--card);
-  border:1px solid var(--rule);
-  display:flex;align-items:center;justify-content:center;
-  padding:2rem;
-}}
-.story__ph{{
-  font-family:var(--serif);font-variant:small-caps;letter-spacing:.12em;
-  font-size:.8125rem;color:var(--ink-3);text-align:center;line-height:1.6;
-}}
-
 .hours{{width:100%;border-collapse:collapse}}
 .hours th,.hours td{{text-align:left;padding-block:.75rem;border-bottom:1px solid var(--rule);font-weight:400;font-size:.9375rem}}
 .hours td{{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}}
@@ -954,7 +932,6 @@ a{{color:inherit}}
     <nav class="nav" id="site-nav" aria-label="Primary">
       <a class="nav__link" href="#menu">Menu</a>
       <a class="nav__link" href="#visit">Visit</a>
-      <a class="nav__link" href="#story">Our Story</a>
       <!-- GET REAL HANDLE FROM OWNER -->
       <a class="nav__ig" href="https://instagram.com/PLACEHOLDER" target="_blank" rel="noopener" aria-label="Cha Redefine on Instagram">{ig_svg}</a>
     </nav>
@@ -1021,28 +998,6 @@ a{{color:inherit}}
         <a class="btn btn--ghost" href="#menu">Full menu</a>
       </div>
       <div class="sig__grid">{signatures}</div>
-    </div>
-  </section>
-
-  <section class="story" id="story">
-    <div class="wrap story__grid">
-      <div>
-        <p class="eyebrow">Who we are</p>
-        <h2>Our story</h2>
-        <!-- REPLACE WITH OWNER'S REAL STORY -->
-        <div class="story__body">
-          <p>We started with one stubborn idea: that a boba shop could source like a
-          specialty cafe. Ceremonial grade matcha, whisked to order rather than shaken
-          from a sweetened mix. Espresso pulled from ONYX beans.</p>
-          <p>The taro paste and the rice mochi are made in our kitchen each morning,
-          which is slower and more work and the reason people come back. Everything on
-          the menu starts with what we would want to drink ourselves.</p>
-        </div>
-      </div>
-      <div class="story__figure">
-        <!-- OWNER PHOTO OR SHOP INTERIOR, ~800x1000px -->
-        <p class="story__ph">Owner portrait or shop interior<br>800 &times; 1000</p>
-      </div>
     </div>
   </section>
 
@@ -1132,7 +1087,6 @@ a{{color:inherit}}
           <p class="foot__k">Order</p>
           <a href="https://charedefinearcadia.toast.site/order/cha-redefine-houston" target="_blank" rel="noopener">Order pickup on Toast</a>
           <a href="#menu">See the full menu</a>
-          <a href="#story">Our story</a>
         </div>
       </div>
 
