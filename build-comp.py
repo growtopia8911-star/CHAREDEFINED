@@ -233,6 +233,12 @@ CATEGORY_OVERRIDES = {
 }
 
 
+def category_id(name):
+    """Stable anchor id for a menu category."""
+    slug = re.sub(r"[^a-z0-9]+", "-", tidy_category(name).lower()).strip("-")
+    return f"cat-{slug}"
+
+
 def tidy_category(name):
     if name in CATEGORY_OVERRIDES:
         return CATEGORY_OVERRIDES[name]
@@ -302,8 +308,10 @@ def main():
         rows = []
         for item in sec["items"]:
             img = images.get(item["slug"])
-            thumb = (f'<img class="row__thumb" src="{img}" alt="" loading="lazy" '
-                     f'decoding="async" width="440" height="440">'
+            alt = esc(clean_name(item["name"]))
+            thumb = (f'<span class="row__thumbwrap"><img class="row__thumb" src="{img}" '
+                     f'alt="{alt}" loading="lazy" decoding="async" width="440" height="440">'
+                     f'</span>'
                      if img else '<span class="row__thumb row__thumb--none" aria-hidden="true"></span>')
             desc = (f'<p class="row__desc">{esc(clean_desc(item["description"]))}</p>'
                     if item["description"] else "")
@@ -317,7 +325,7 @@ def main():
               <span class="row__price">{esc(item['price'])}</span>
             </li>""")
         menu_html.append(f"""
-        <section class="group" style="--hue:{hue}">
+        <section class="group" id="{category_id(sec['category'])}" style="--hue:{hue}">
           <h3 class="group__name"><span class="group__dot" aria-hidden="true"></span>{esc(tidy_category(sec["category"]))}</h3>
           <ul class="rows">{''.join(rows)}</ul>
         </section>""")
@@ -329,10 +337,18 @@ def main():
             for i in sec["items"]
         )
         top_html.append(f"""
-        <section class="group group--chips">
+        <section class="group group--chips" id="{category_id(sec['category'])}">
           <h3 class="group__name"><span class="group__dot" style="--hue:#A99684" aria-hidden="true"></span>{esc(tidy_category(sec["category"]))}</h3>
           <ul class="chips">{chips}</ul>
         </section>""")
+
+    jump_html = "".join(
+        f'<li><a class="jump__link" href="#{category_id(sec["category"])}" '
+        f'style="--hue:{hue_for(sec["category"])}">'
+        f'<span class="jump__dot" aria-hidden="true"></span>'
+        f'{esc(tidy_category(sec["category"]))}</a></li>'
+        for sec in drink_secs + topping_secs
+    )
 
     n_drinks = sum(len(s["items"]) for s in drink_secs)
 
@@ -344,6 +360,7 @@ def main():
         hero_media=hero_media,
         signatures="".join(sig_html),
         menu="".join(menu_html),
+        jump=jump_html,
         toppings="".join(top_html),
         n_drinks=n_drinks,
         n_cats=len(drink_secs),
@@ -638,7 +655,14 @@ a{{color:inherit}}
   background:color-mix(in srgb,var(--hue) 16%,var(--card));
   border-bottom:3px solid var(--hue);
 }}
-.sig__img{{width:100%;height:100%;object-fit:cover}}
+/* Toast shoots these on a tiled "CHA REDEFINE" backdrop. A small zoom pushes
+   the repeating watermark out of frame and centres the cup. */
+.sig__img{{
+  width:100%;height:100%;
+  object-fit:cover;object-position:center;
+  transform:scale(1.24);
+  transform-origin:center 46%;
+}}
 .sig__img--none{{width:100%;height:100%}}
 .sig__text{{padding:1.25rem 1.25rem 1.5rem;display:flex;flex-direction:column;flex:1;gap:.5rem}}
 .sig__name{{font-family:var(--serif);font-variant:small-caps;letter-spacing:.04em;font-size:1.375rem;font-weight:600;line-height:1.15}}
@@ -654,6 +678,29 @@ a{{color:inherit}}
 .menu__head{{margin-bottom:2.5rem;max-width:44rem}}
 .menu__head h2{{font-family:var(--serif);font-variant:small-caps;letter-spacing:.05em;font-size:var(--s3)}}
 .menu__head p{{margin-top:.75rem;color:var(--ink-2)}}
+/* horizontal category jump list - scrolls sideways on narrow screens */
+.jump{{
+  margin-bottom:2.5rem;
+  border-block:1px solid var(--rule-soft);
+  overflow-x:auto;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}}
+.jump::-webkit-scrollbar{{display:none}}
+.jump__list{{display:flex;gap:.375rem;padding-block:.5rem;width:max-content;min-width:100%}}
+.jump__link{{
+  display:inline-flex;align-items:center;gap:.5rem;
+  min-height:44px;padding:.375rem .875rem;
+  white-space:nowrap;
+  font-size:.8125rem;font-weight:500;letter-spacing:.04em;
+  color:var(--ink-2);text-decoration:none;
+  border:1px solid var(--rule);border-radius:2px;
+  background:var(--card);
+  transition:color .18s ease,border-color .18s ease;
+}}
+.jump__link:hover{{color:var(--ink);border-color:var(--ink)}}
+.jump__dot{{width:7px;height:7px;border-radius:50%;background:var(--hue);flex:none}}
+
 .menu__cols{{columns:1;column-gap:clamp(2rem,4vw,3.5rem)}}
 @media(min-width:56rem){{.menu__cols{{columns:2}}}}
 .group{{break-inside:avoid;margin-bottom:2.75rem;display:inline-block;width:100%}}
@@ -673,7 +720,17 @@ a{{color:inherit}}
   padding-block:.75rem;
   border-bottom:1px solid var(--rule-soft);
 }}
-.row__thumb{{width:52px;height:52px;object-fit:cover;border-radius:2px;background:var(--paper-2)}}
+.row__thumb{{
+  width:52px;height:52px;flex:none;
+  object-fit:cover;object-position:center;
+  border-radius:2px;background:var(--paper-2);
+  transform:scale(1.2);
+}}
+/* the zoom needs a clipping frame, or it bleeds over neighbouring cells */
+.row__thumbwrap{{
+  width:52px;height:52px;flex:none;overflow:hidden;
+  border-radius:2px;background:var(--paper-2);
+}}
 .row__thumb--none{{display:block;background:color-mix(in srgb,var(--hue) 18%,var(--paper-2))}}
 .row__text{{min-width:0}}
 .row__name{{font-size:.9375rem;font-weight:500;line-height:1.3}}
@@ -887,6 +944,9 @@ a{{color:inherit}}
         <h2>The full menu</h2>
         <p>Every drink comes at your sweetness and ice level. These are the prices you pay at the counter — the same ones on our Toast ordering page.</p>
       </div>
+      <nav class="jump" aria-label="Jump to a menu section">
+        <ul class="jump__list">{jump}</ul>
+      </nav>
       <div class="menu__cols">{menu}{toppings}</div>
     </div>
   </section>
