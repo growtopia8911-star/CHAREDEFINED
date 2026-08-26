@@ -47,6 +47,16 @@ FAMILY_HUES = [
 ]
 DEFAULT_HUE = "#A99684"
 
+# Instagram mark as inline SVG - currentColor so it inherits the text colour.
+IG_SVG = (
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+    '<rect x="2.5" y="2.5" width="19" height="19" rx="5.2"/>'
+    '<circle cx="12" cy="12" r="4.2"/>'
+    '<circle cx="17.6" cy="6.4" r="1.1" fill="currentColor" stroke="none"/>'
+    '</svg>'
+)
+
 # The six that carry the ingredient argument: matcha, house taro + mochi,
 # ONYX espresso, fresh coconut, plus the two signatures.
 SIGNATURE_SLUGS = [
@@ -220,6 +230,7 @@ def main():
                   f'style="object-position:{hero_pos}">' if hero_uri else "")
 
     html = TEMPLATE.format(
+        ig_svg=IG_SVG,
         hero_media=hero_media,
         signatures="".join(sig_html),
         menu="".join(menu_html),
@@ -295,6 +306,8 @@ TEMPLATE = """<title>Cha Redefine</title>
 
 *,*::before,*::after{{box-sizing:border-box}}
 
+html{{scroll-behavior:smooth}}
+
 body{{
   margin:0;
   background:var(--paper);
@@ -346,6 +359,7 @@ a{{color:inherit}}
 /* ── masthead ───────────────────────────────── */
 .masthead{{
   position:sticky;top:0;z-index:40;
+  /* anchor for the mobile nav drop panel */
   background:color-mix(in srgb,var(--paper) 92%,transparent);
   backdrop-filter:blur(12px);
   border-bottom:1px solid var(--rule-soft);
@@ -355,14 +369,89 @@ a{{color:inherit}}
   font-family:var(--serif);
   font-variant:small-caps;
   letter-spacing:.1em;
-  font-size:1.375rem;
+  font-size:1.125rem;
   font-weight:600;
   text-decoration:none;
   display:flex;align-items:center;
   min-height:44px;
+  white-space:nowrap;
 }}
-.masthead .btn{{display:none}}
-@media(min-width:48rem){{.masthead .btn{{display:inline-flex}}}}
+@media(min-width:48rem){{.mark{{font-size:1.375rem}}}}
+
+.masthead__actions{{display:flex;align-items:center;gap:.5rem}}
+
+/* ── primary nav ────────────────────────────── */
+.nav{{display:none;align-items:center;gap:1.75rem}}
+.nav__link{{
+  font-family:var(--serif);
+  font-variant:small-caps;
+  letter-spacing:.14em;
+  font-size:1rem;
+  font-weight:600;
+  text-decoration:none;
+  color:var(--ink-2);
+  min-height:44px;
+  display:inline-flex;align-items:center;
+  border-bottom:1px solid transparent;
+  transition:color .18s ease,border-color .18s ease;
+}}
+.nav__link:hover{{color:var(--ink);border-bottom-color:var(--ink)}}
+.nav__ig{{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;color:var(--ink-2);
+  transition:color .18s ease;
+}}
+.nav__ig:hover{{color:var(--ink)}}
+.nav__ig svg{{width:19px;height:19px;display:block}}
+
+/* hamburger — mobile only */
+.burger{{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;flex:none;
+  background:none;border:1px solid var(--rule);border-radius:2px;
+  color:var(--ink);cursor:pointer;padding:0;
+}}
+.burger span{{
+  display:block;width:17px;height:1.5px;background:currentColor;
+  position:relative;transition:background-color .18s ease;
+}}
+.burger span::before,.burger span::after{{
+  content:"";position:absolute;left:0;width:17px;height:1.5px;background:currentColor;
+  transition:transform .22s ease,top .22s ease;
+}}
+.burger span::before{{top:-5.5px}}
+.burger span::after{{top:5.5px}}
+.burger[aria-expanded="true"] span{{background:transparent}}
+.burger[aria-expanded="true"] span::before{{top:0;transform:rotate(45deg)}}
+.burger[aria-expanded="true"] span::after{{top:0;transform:rotate(-45deg)}}
+
+@media(min-width:48rem){{
+  .nav{{display:flex}}
+  .burger{{display:none}}
+}}
+
+/* mobile drop panel */
+@media(max-width:47.99rem){{
+  .nav.is-open{{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:0;
+    position:absolute;
+    top:100%;left:0;right:0;
+    background:var(--paper);
+    border-bottom:1px solid var(--rule);
+    padding:.5rem var(--gut) 1rem;
+  }}
+  .nav.is-open .nav__link{{
+    width:100%;
+    min-height:52px;
+    font-size:1.25rem;
+    border-bottom:1px solid var(--rule-soft);
+  }}
+  .nav.is-open .nav__link:hover{{border-bottom-color:var(--rule-soft)}}
+  .nav.is-open .nav__ig{{justify-content:flex-start;width:auto;padding-top:.75rem}}
+}}
 
 /* ── buttons — black, from the CHA wordmark ─── */
 .btn{{
@@ -377,6 +466,8 @@ a{{color:inherit}}
 .btn--solid:hover{{background:#332A22}}
 .btn--ghost{{border-color:var(--ink);color:var(--ink)}}
 .btn--ghost:hover{{background:var(--ink);color:var(--paper)}}
+.btn--compact{{padding:.5625rem .875rem;font-size:.8125rem;min-height:44px}}
+@media(min-width:48rem){{.btn--compact{{padding:.6875rem 1.5rem;font-size:.9375rem}}}}
 
 /* ── hero ───────────────────────────────────── */
 .hero{{padding-top:clamp(2.5rem,6vw,4.5rem)}}
@@ -531,6 +622,7 @@ a{{color:inherit}}
 @media(min-width:48rem){{.orderbar{{display:none}}}}
 
 @media(prefers-reduced-motion:reduce){{
+  html{{scroll-behavior:auto}}
   *{{transition-duration:.01ms !important;animation-duration:.01ms !important}}
 }}
 </style>
@@ -538,7 +630,19 @@ a{{color:inherit}}
 <header class="masthead">
   <div class="wrap masthead__in">
     <a class="mark" href="#top">Cha Redefine</a>
-    <a class="btn btn--solid" href="https://charedefinearcadia.toast.site/order/cha-redefine-houston" target="_blank" rel="noopener">Order now</a>
+
+    <nav class="nav" id="site-nav" aria-label="Primary">
+      <a class="nav__link" href="#menu">Menu</a>
+      <a class="nav__link" href="#visit">Visit</a>
+      <a class="nav__link" href="#story">Our Story</a>
+      <!-- GET REAL HANDLE FROM OWNER -->
+      <a class="nav__ig" href="https://instagram.com/PLACEHOLDER" target="_blank" rel="noopener" aria-label="Cha Redefine on Instagram">{ig_svg}</a>
+    </nav>
+
+    <div class="masthead__actions">
+      <a class="btn btn--solid btn--compact" href="https://charedefinearcadia.toast.site/order/cha-redefine-houston" target="_blank" rel="noopener">Order now</a>
+      <button class="burger" type="button" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu"><span></span></button>
+    </div>
   </div>
 </header>
 
@@ -611,7 +715,7 @@ a{{color:inherit}}
     </div>
   </section>
 
-  <section class="visit">
+  <section class="visit" id="visit">
     <div class="wrap visit__grid">
       <div>
         <p class="eyebrow">When we're open</p>
@@ -660,6 +764,35 @@ a{{color:inherit}}
   </footer>
 
 </main>
+
+<script>
+(function () {{
+  var toggle = document.getElementById('nav-toggle');
+  var nav = document.getElementById('site-nav');
+  if (!toggle || !nav) return;
+
+  function setOpen(open) {{
+    nav.classList.toggle('is-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }}
+
+  toggle.addEventListener('click', function () {{
+    setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+  }});
+
+  // close after tapping a link, and on Escape
+  nav.addEventListener('click', function (e) {{
+    if (e.target.closest('a')) setOpen(false);
+  }});
+  document.addEventListener('keydown', function (e) {{
+    if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {{
+      setOpen(false);
+      toggle.focus();
+    }}
+  }});
+}})();
+</script>
 
 <nav class="orderbar" aria-label="Order">
   <a class="btn btn--solid" href="https://charedefinearcadia.toast.site/order/cha-redefine-houston" target="_blank" rel="noopener">Order now</a>
