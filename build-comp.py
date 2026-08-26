@@ -704,6 +704,47 @@ a{{color:inherit}}
 .rowlink:hover{{color:var(--ink-2)}}
 .rowlink__k{{font-size:.6875rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);flex:none}}
 .rowlink__v{{text-align:right;font-size:.9375rem;line-height:1.4}}
+/* map — thin border matching the divider rules */
+.map{{
+  margin-top:1.5rem;
+  border:1px solid var(--rule);
+  background:var(--paper);
+  line-height:0;
+}}
+.map iframe{{display:block;width:100%;height:350px;border:0}}
+.map__link{{
+  display:inline-flex;align-items:center;gap:.4rem;
+  min-height:44px;margin-top:.5rem;
+  font-size:.875rem;font-weight:600;
+  color:var(--ink);
+  border-bottom:1px solid var(--rule);
+  text-decoration:none;
+  transition:border-color .18s ease;
+}}
+.map__link:hover{{border-bottom-color:var(--ink)}}
+
+/* ── our story ──────────────────────────────── */
+.story{{padding-block:var(--stack)}}
+.story__grid{{display:grid;gap:clamp(2rem,5vw,4rem);align-items:center}}
+@media(min-width:52rem){{.story__grid{{grid-template-columns:1.05fr .95fr}}}}
+.story h2{{
+  font-family:var(--serif);font-variant:small-caps;letter-spacing:.05em;
+  font-size:var(--s3);margin-bottom:1.25rem;
+}}
+.story__body{{display:flex;flex-direction:column;gap:1rem;color:var(--ink-2);max-width:52ch}}
+.story__body p{{font-size:1.0625rem;line-height:1.65}}
+.story__figure{{
+  aspect-ratio:4/5;
+  background:var(--card);
+  border:1px solid var(--rule);
+  display:flex;align-items:center;justify-content:center;
+  padding:2rem;
+}}
+.story__ph{{
+  font-family:var(--serif);font-variant:small-caps;letter-spacing:.12em;
+  font-size:.8125rem;color:var(--ink-3);text-align:center;line-height:1.6;
+}}
+
 .hours{{width:100%;border-collapse:collapse}}
 .hours th,.hours td{{text-align:left;padding-block:.75rem;border-bottom:1px solid var(--rule);font-weight:400;font-size:.9375rem}}
 .hours td{{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}}
@@ -817,6 +858,28 @@ a{{color:inherit}}
     </div>
   </section>
 
+  <section class="story" id="story">
+    <div class="wrap story__grid">
+      <div>
+        <p class="eyebrow">Who we are</p>
+        <h2>Our story</h2>
+        <!-- REPLACE WITH OWNER'S REAL STORY -->
+        <div class="story__body">
+          <p>We started with one stubborn idea: that a boba shop could source like a
+          specialty cafe. Ceremonial grade matcha, whisked to order rather than shaken
+          from a sweetened mix. Espresso pulled from ONYX beans.</p>
+          <p>The taro paste and the rice mochi are made in our kitchen each morning,
+          which is slower and more work and the reason people come back. Everything on
+          the menu starts with what we would want to drink ourselves.</p>
+        </div>
+      </div>
+      <div class="story__figure">
+        <!-- OWNER PHOTO OR SHOP INTERIOR, ~800x1000px -->
+        <p class="story__ph">Owner portrait or shop interior<br>800 &times; 1000</p>
+      </div>
+    </div>
+  </section>
+
   <section class="menu" id="menu">
     <div class="wrap">
       <div class="menu__head">
@@ -865,6 +928,15 @@ a{{color:inherit}}
           <span class="rowlink__k">Order</span>
           <span class="rowlink__v">Pick up on Toast</span>
         </a>
+
+        <div class="map">
+          <iframe
+            src="https://maps.google.com/maps?q=9889%20Bellaire%20Blvd%20Suite%20C318%20Houston%20TX%2077036&amp;output=embed"
+            title="Map showing Cha Redefine at 9889 Bellaire Blvd Suite C318, Houston, Texas"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+        <a class="map__link" href="https://www.google.com/maps/dir/?api=1&amp;destination=9889%20Bellaire%20Blvd%20Suite%20C318%20Houston%20TX%2077036" target="_blank" rel="noopener">Get directions &rarr;</a>
       </div>
     </div>
   </section>
