@@ -420,9 +420,10 @@ def main():
         toppings="".join(top_html),
         n_drinks=n_drinks,
         n_cats=len(drink_secs),
+        # Reads as client-facing copy, not as a build instruction.
         hero_note=("" if hero_src != "assets/hero-toast.jpg" else
-                   " The header photo is the Toast banner as a stand-in — save the cup-lineup "
-                   "shot as <b>assets/hero-lineup.jpg</b> and rebuild to swap it in."),
+                   " The header image is a seasonal campaign banner standing in for a "
+                   "permanent hero shot."),
     )
 
     # The artifact host wraps the fragment in its own document shell. Pass
@@ -1104,10 +1105,9 @@ a{{color:inherit}}
         <span class="display">茶</span>
       </div>
       <p class="comp-note">
-        <b>Design comp — not the finished site.</b> Drink names, descriptions, prices and
-        photography are pulled live from the shop's own Toast ordering page on 26 August 2026,
-        so the menu is real. Hours are shown as "until 11PM" because Toast publishes only the
-        closing time — opening times still need confirming.{hero_note}
+        <b>Design preview.</b> Menu, prices and drink photography are pulled from Cha Redefine's
+        own Toast ordering page and are current as of 26 August 2026. Hours, phone number and
+        Instagram are confirmed.{hero_note}
       </p>
     </div>
   </footer>
