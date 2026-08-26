@@ -27,6 +27,20 @@ HERO_PX = 1600
 # so it gets shifted with object-position).
 HERO_CANDIDATES = ["assets/hero-lineup.jpg", "assets/hero-lineup.png", "assets/hero-toast.jpg"]
 
+# Brand logos, used the moment the files exist. Until then the header falls back
+# to the typeset wordmark and the favicon to an inline 茶.
+#   logo-mark      - the square CHA REDEFINE badge, used as the browser-tab icon
+#   logo-wordmark  - the horizontal CHA REDEFINE lockup, used in the header
+# A wordmark drawn in white needs a dark chip behind it on the cream header;
+# set LOGO_ON_DARK = True in that case.
+MARK_CANDIDATES = [
+    "assets/logo-mark.png", "assets/logo-mark.svg", "assets/logo-mark.jpg",
+]
+WORDMARK_CANDIDATES = [
+    "assets/logo-wordmark.svg", "assets/logo-wordmark.png", "assets/logo-wordmark.jpg",
+]
+LOGO_ON_DARK = False
+
 # One hue per drink family, sampled from the drinks themselves rather than
 # invented. Matcha is one of these, not the brand colour - that was the note.
 FAMILY_HUES = [
@@ -94,6 +108,20 @@ def resize_to_data_uri(path, px, quality=70):
             return "data:image/jpeg;base64," + base64.b64encode(fh.read()).decode()
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
+
+
+def load_logo(candidates, px):
+    """First existing candidate as a data URI. SVG is passed through untouched."""
+    for rel in candidates:
+        path = os.path.join(ROOT, rel)
+        if not os.path.exists(path):
+            continue
+        if path.lower().endswith(".svg"):
+            with open(path, "rb") as fh:
+                b64 = base64.b64encode(fh.read()).decode()
+            return f"data:image/svg+xml;base64,{b64}", rel
+        return resize_to_data_uri(path, px, quality=88), rel
+    return None, None
 
 
 def esc(s):
@@ -272,6 +300,21 @@ def main():
             hero_src = cand
             break
     print(f"  hero: {hero_src}")
+
+    mark_uri, mark_src = load_logo(MARK_CANDIDATES, 180)
+    word_uri, word_src = load_logo(WORDMARK_CANDIDATES, 720)
+    print(f"  tab mark: {mark_src or 'none - falling back to inline 茶'}")
+    print(f"  wordmark: {word_src or 'none - falling back to typeset text'}")
+
+    if word_uri:
+        brand_html = (
+            f'<a class="mark mark--img{" mark--dark" if LOGO_ON_DARK else ""}" href="#top">'
+            f'<img src="{word_uri}" alt="Cha Redefine" width="220" height="44">'
+            f'</a>'
+        )
+    else:
+        brand_html = '<a class="mark" href="#top">Cha Redefine</a>'
+
     # The Toast banner has promo type baked into its left half; push the crop
     # right so the cups fill the band instead of half a word.
     hero_pos = "88% center" if hero_src == "assets/hero-toast.jpg" else "center"
@@ -312,7 +355,7 @@ def main():
             thumb = (f'<span class="row__thumbwrap"><img class="row__thumb" src="{img}" '
                      f'alt="{alt}" loading="lazy" decoding="async" width="440" height="440">'
                      f'</span>'
-                     if img else '<span class="row__thumb row__thumb--none" aria-hidden="true"></span>')
+                     if img else '<span class="row__thumbwrap row__thumbwrap--none" aria-hidden="true"></span>')
             desc = (f'<p class="row__desc">{esc(clean_desc(item["description"]))}</p>'
                     if item["description"] else "")
             rows.append(f"""
@@ -357,6 +400,7 @@ def main():
 
     html = TEMPLATE.format(
         ig_svg=IG_SVG,
+        brand=brand_html,
         hero_media=hero_media,
         signatures="".join(sig_html),
         menu="".join(menu_html),
@@ -375,7 +419,7 @@ def main():
     if "--standalone" in sys.argv:
         head, rest = html.split('<header class="masthead">', 1)
         # A 茶 on the site's cream ground, drawn inline so there is no icon file.
-        favicon = (
+        favicon = mark_uri or (
             "data:image/svg+xml,"
             "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E"
             "%3Crect width='64' height='64' fill='%23F4EBDD'/%3E"
@@ -526,6 +570,19 @@ a{{color:inherit}}
 }}
 @media(min-width:48rem){{.mark{{font-size:1.375rem}}}}
 
+/* supplied wordmark image, when assets/logo-wordmark.* exists */
+.mark--img{{padding-block:.25rem}}
+.mark--img img{{
+  width:auto;height:26px;display:block;
+}}
+@media(min-width:48rem){{.mark--img img{{height:30px}}}}
+/* a white wordmark needs a dark chip to read on the cream header */
+.mark--dark{{
+  background:var(--ink);
+  padding:.4375rem .75rem;
+  border-radius:2px;
+}}
+
 .masthead__actions{{display:flex;align-items:center;gap:.5rem}}
 
 /* ── primary nav ────────────────────────────── */
@@ -672,17 +729,18 @@ a{{color:inherit}}
 @media(min-width:62rem){{.sig__grid{{grid-template-columns:repeat(3,1fr)}}}}
 .sig{{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--rule-soft)}}
 .sig__media{{
+  position:relative;
   aspect-ratio:1;overflow:hidden;
   background:color-mix(in srgb,var(--hue) 16%,var(--card));
   border-bottom:3px solid var(--hue);
 }}
-/* Toast shoots these on a tiled "CHA REDEFINE" backdrop. A small zoom pushes
-   the repeating watermark out of frame and centres the cup. */
+/* Toast shoots these on a tiled "CHA REDEFINE" backdrop. Insetting the image
+   past its frame crops the repeating watermark out and centres the cup. */
 .sig__img{{
-  width:100%;height:100%;
-  object-fit:cover;object-position:center;
-  transform:scale(1.24);
-  transform-origin:center 46%;
+  position:absolute;
+  top:-12%;left:-12%;
+  width:124%;height:124%;
+  object-fit:cover;object-position:center 52%;
 }}
 .sig__img--none{{width:100%;height:100%}}
 .sig__text{{padding:1.25rem 1.25rem 1.5rem;display:flex;flex-direction:column;flex:1;gap:.5rem}}
@@ -741,18 +799,18 @@ a{{color:inherit}}
   padding-block:.75rem;
   border-bottom:1px solid var(--rule-soft);
 }}
-.row__thumb{{
-  width:52px;height:52px;flex:none;
-  object-fit:cover;object-position:center;
-  border-radius:2px;background:var(--paper-2);
-  transform:scale(1.2);
-}}
-/* the zoom needs a clipping frame, or it bleeds over neighbouring cells */
 .row__thumbwrap{{
+  position:relative;
   width:52px;height:52px;flex:none;overflow:hidden;
   border-radius:2px;background:var(--paper-2);
 }}
-.row__thumb--none{{display:block;background:color-mix(in srgb,var(--hue) 18%,var(--paper-2))}}
+.row__thumb{{
+  position:absolute;
+  top:-10%;left:-10%;
+  width:120%;height:120%;
+  object-fit:cover;object-position:center 52%;
+}}
+.row__thumbwrap--none{{background:color-mix(in srgb,var(--hue) 18%,var(--paper-2))}}
 .row__text{{min-width:0}}
 .row__name{{font-size:.9375rem;font-weight:500;line-height:1.3}}
 .row__desc{{font-size:.8125rem;color:var(--ink-3);line-height:1.45;margin-top:.15rem}}
@@ -849,7 +907,7 @@ a{{color:inherit}}
 }}
 .foot__col a{{
   color:var(--ink-2);text-decoration:none;
-  min-height:32px;display:inline-flex;align-items:center;
+  min-height:44px;display:inline-flex;align-items:center;
   transition:color .18s ease;
 }}
 .foot__col a:hover{{color:var(--ink)}}
@@ -891,7 +949,7 @@ a{{color:inherit}}
 
 <header class="masthead">
   <div class="wrap masthead__in">
-    <a class="mark" href="#top">Cha Redefine</a>
+    {brand}
 
     <nav class="nav" id="site-nav" aria-label="Primary">
       <a class="nav__link" href="#menu">Menu</a>
