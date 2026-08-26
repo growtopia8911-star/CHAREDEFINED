@@ -1,0 +1,655 @@
+#!/usr/bin/env python3
+"""
+Build the Cha Redefine design comp as a single self-contained HTML file.
+
+Reads data/menu.json, resizes the drink photos, inlines everything as data
+URIs (the artifact host blocks external image requests), and writes the comp.
+
+Usage:  python3 build-comp.py [output.html]
+"""
+import base64
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "comp.html")
+
+DRINK_PX = 440
+HERO_PX = 1600
+
+# Hero: prefer the untitled cup-lineup shot if it has been saved, otherwise
+# fall back to the Toast banner (which has promo text baked into the left side,
+# so it gets shifted with object-position).
+HERO_CANDIDATES = ["assets/hero-lineup.jpg", "assets/hero-lineup.png", "assets/hero-toast.jpg"]
+
+# One hue per drink family, sampled from the drinks themselves rather than
+# invented. Matcha is one of these, not the brand colour - that was the note.
+FAMILY_HUES = [
+    (r"matcha",                     "#7C9B4E"),
+    (r"beet|superfood",             "#C0495F"),
+    (r"longan|coconut|coco",        "#D9B57F"),
+    (r"lychee|rice",                "#E0A0AC"),
+    (r"hojicha",                    "#A8623A"),
+    (r"einspanner",                 "#C08A4E"),
+    (r"mochi",                      "#B39BC6"),
+    (r"milk tea|chappuccino|latte", "#8A6642"),
+    (r"fruit",                      "#D9704A"),
+    (r"coffee",                     "#6B4526"),
+    (r"non caffeinated|kids",       "#CE8A5C"),
+    (r"cream foam",                 "#D8B072"),
+    (r"^cha$",                      "#7E9E7A"),
+    (r"cup|topping",                "#A99684"),
+]
+DEFAULT_HUE = "#A99684"
+
+# The six that carry the ingredient argument: matcha, house taro + mochi,
+# ONYX espresso, fresh coconut, plus the two signatures.
+SIGNATURE_SLUGS = [
+    "matcha-latte-ice",
+    "mochi-taro-24oz",
+    "rice-einspanner-12oz-no-need-straw",
+    "matcha-coco-chill-16oz",
+    "banana-pudding-matcha-latte-12oz",
+    "popping-milk-tea-16oz",
+]
+
+
+def hue_for(category):
+    c = (category or "").lower()
+    for pat, hue in FAMILY_HUES:
+        if re.search(pat, c):
+            return hue
+    return DEFAULT_HUE
+
+
+def resize_to_data_uri(path, px, quality=70):
+    """Resize with sips (built into macOS) and return a base64 data URI."""
+    if not os.path.exists(path):
+        return None
+    tmpdir = tempfile.mkdtemp()
+    try:
+        tmp = os.path.join(tmpdir, "out.jpg")
+        shutil.copy(path, tmp)
+        subprocess.run(
+            ["sips", "-Z", str(px), "-s", "format", "jpeg",
+             "-s", "formatOptions", str(quality), tmp],
+            capture_output=True, check=False,
+        )
+        with open(tmp, "rb") as fh:
+            return "data:image/jpeg;base64," + base64.b64encode(fh.read()).decode()
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
+
+
+def esc(s):
+    return (str(s or "")
+            .replace("&", "&amp;").replace("<", "&lt;")
+            .replace(">", "&gt;").replace('"', "&quot;"))
+
+
+def tidy(name):
+    """Toast names carry ordering cruft. Keep the size, drop the instructions."""
+    s = re.sub(r"\(\s*no need straw\s*\)", "", name, flags=re.I)
+    s = re.sub(r"\s+", " ", s).strip()
+    s = re.sub(r"(\d+)oz", r"\1 oz", s)
+    return s
+
+
+# Toast's category names are typed by staff and carry casing and spacing
+# quirks. Fix them for display without touching the source data.
+CATEGORY_OVERRIDES = {
+    "superfood-Beet & Coconut": "Superfood — Beet & Coconut",
+    "Longan& coconut": "Longan & Coconut",
+    "Signature Milk Tea (Chappuccino & Cha Latte)": "Signature Milk Tea",
+    "Non Caffeinated & Kids Menu": "Non-Caffeinated & Kids",
+    "cups": "Cups",
+    "Topping": "Toppings",
+    "Cha X Fruits": "Cha × Fruits",
+}
+
+
+def tidy_category(name):
+    if name in CATEGORY_OVERRIDES:
+        return CATEGORY_OVERRIDES[name]
+    s = re.sub(r"\s*&\s*", " & ", name)
+    s = re.sub(r"\s+", " ", s).strip()
+    # capitalise a leading lowercase word, leave the rest as typed
+    return s[:1].upper() + s[1:] if s else s
+
+
+def main():
+    data = json.load(open(os.path.join(ROOT, "data", "menu.json")))
+    menu = data["menu"]
+
+    by_slug = {i["slug"]: (s, i) for s in menu for i in s["items"]}
+
+    print("encoding images...")
+    images = {}
+    for sec in menu:
+        for item in sec["items"]:
+            if item.get("image"):
+                uri = resize_to_data_uri(os.path.join(ROOT, item["image"]), DRINK_PX)
+                if uri:
+                    images[item["slug"]] = uri
+    print(f"  {len(images)} drink photos encoded")
+
+    hero_uri, hero_src = None, None
+    for cand in HERO_CANDIDATES:
+        p = os.path.join(ROOT, cand)
+        if os.path.exists(p):
+            hero_uri = resize_to_data_uri(p, HERO_PX, quality=68)
+            hero_src = cand
+            break
+    print(f"  hero: {hero_src}")
+    # The Toast banner has promo type baked into its left half; push the crop
+    # right so the cups fill the band instead of half a word.
+    hero_pos = "88% center" if hero_src == "assets/hero-toast.jpg" else "center"
+
+    # ---- signature cards -------------------------------------------------
+    sig_html = []
+    for slug in SIGNATURE_SLUGS:
+        if slug not in by_slug:
+            print(f"  ! signature missing: {slug}")
+            continue
+        sec, item = by_slug[slug]
+        hue = hue_for(sec["category"])
+        img = images.get(slug)
+        media = (f'<img class="sig__img" src="{img}" alt="{esc(tidy(item["name"]))}" '
+                 f'loading="lazy" decoding="async" width="440" height="440">'
+                 if img else '<div class="sig__img sig__img--none"></div>')
+        sig_html.append(f"""
+        <article class="sig">
+          <div class="sig__media" style="--hue:{hue}">{media}</div>
+          <div class="sig__text">
+            <h3 class="sig__name">{esc(tidy(item['name']))}</h3>
+            <p class="sig__desc">{esc(item['description'])}</p>
+            <p class="sig__price">{esc(item['price'])}</p>
+          </div>
+        </article>""")
+
+    # ---- full menu -------------------------------------------------------
+    drink_secs = [s for s in menu if s["kind"] == "drink"]
+    topping_secs = [s for s in menu if s["kind"] == "topping"]
+
+    menu_html = []
+    for sec in drink_secs:
+        hue = hue_for(sec["category"])
+        rows = []
+        for item in sec["items"]:
+            img = images.get(item["slug"])
+            thumb = (f'<img class="row__thumb" src="{img}" alt="" loading="lazy" '
+                     f'decoding="async" width="440" height="440">'
+                     if img else '<span class="row__thumb row__thumb--none" aria-hidden="true"></span>')
+            desc = (f'<p class="row__desc">{esc(item["description"])}</p>'
+                    if item["description"] else "")
+            rows.append(f"""
+            <li class="row">
+              {thumb}
+              <div class="row__text">
+                <h4 class="row__name">{esc(tidy(item['name']))}</h4>
+                {desc}
+              </div>
+              <span class="row__price">{esc(item['price'])}</span>
+            </li>""")
+        menu_html.append(f"""
+        <section class="group" style="--hue:{hue}">
+          <h3 class="group__name"><span class="group__dot" aria-hidden="true"></span>{esc(tidy_category(sec["category"]))}</h3>
+          <ul class="rows">{''.join(rows)}</ul>
+        </section>""")
+
+    top_html = []
+    for sec in topping_secs:
+        chips = "".join(
+            f'<li class="chip"><span>{esc(tidy(i["name"]))}</span><b>{esc(i["price"])}</b></li>'
+            for i in sec["items"]
+        )
+        top_html.append(f"""
+        <section class="group group--chips">
+          <h3 class="group__name"><span class="group__dot" style="--hue:#A99684" aria-hidden="true"></span>{esc(tidy_category(sec["category"]))}</h3>
+          <ul class="chips">{chips}</ul>
+        </section>""")
+
+    n_drinks = sum(len(s["items"]) for s in drink_secs)
+
+    hero_media = (f'<img src="{hero_uri}" alt="Cha Redefine drinks lined up" '
+                  f'style="object-position:{hero_pos}">' if hero_uri else "")
+
+    html = TEMPLATE.format(
+        hero_media=hero_media,
+        signatures="".join(sig_html),
+        menu="".join(menu_html),
+        toppings="".join(top_html),
+        n_drinks=n_drinks,
+        n_cats=len(drink_secs),
+        hero_note=("" if hero_src != "assets/hero-toast.jpg" else
+                   " The header photo is the Toast banner as a stand-in — save the cup-lineup "
+                   "shot as <b>assets/hero-lineup.jpg</b> and rebuild to swap it in."),
+    )
+
+    with open(OUT, "w", encoding="utf-8") as fh:
+        fh.write(html)
+    print(f"wrote {OUT}  ({os.path.getsize(OUT)/1_000_000:.1f} MB)")
+
+
+TEMPLATE = """<title>Cha Redefine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@400;500;600&display=swap">
+
+<style>
+/* ─────────────────────────────────────────────
+   Cha Redefine — design comp
+   Palette and type follow the shop's own brand
+   assets: warm sand ground, black CHA wordmark,
+   high-contrast serif set in small caps.
+   Colour comes from the drinks, not the chrome —
+   matcha is one family hue among several.
+   ───────────────────────────────────────────── */
+:root{{
+  --paper:#F4EBDD;
+  --paper-2:#EDE0CE;
+  --card:#FBF5EC;
+  --sand:#D9C3A2;
+  --ink:#15120F;
+  --ink-2:#6B5D4E;
+  --ink-3:#9C8B78;
+  --rule:#DFCFB8;
+  --rule-soft:#E8DBC7;
+
+  --s-1:.8125rem;
+  --s0:1rem;
+  --s1:1.125rem;
+  --s2:1.5rem;
+  --s3:2.125rem;
+  --s4:3rem;
+  --s5:4.25rem;
+
+  --gut:clamp(1.25rem,5vw,4rem);
+  --stack:clamp(3.5rem,8vw,6.5rem);
+
+  --serif:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --sans:"Instrument Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}}
+
+*,*::before,*::after{{box-sizing:border-box}}
+
+body{{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:var(--s0);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}}
+
+h1,h2,h3,h4{{margin:0;font-weight:500;line-height:1.1;text-wrap:balance}}
+p{{margin:0}}
+ul{{margin:0;padding:0;list-style:none}}
+/* figure carries a 40px UA margin that breaks the full-bleed hero */
+figure{{margin:0}}
+table{{margin:0}}
+img{{max-width:100%;display:block}}
+a{{color:inherit}}
+
+:focus-visible{{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}}
+
+.wrap{{width:100%;max-width:76rem;margin-inline:auto;padding-inline:var(--gut)}}
+
+/* in-page links must clear the sticky masthead */
+[id]{{scroll-margin-top:76px}}
+
+/* display type — their brand sets it in small caps with wide tracking */
+.display{{
+  font-family:var(--serif);
+  font-variant:small-caps;
+  letter-spacing:.06em;
+  font-weight:500;
+}}
+
+.eyebrow{{
+  font-size:.6875rem;
+  font-weight:600;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  display:flex;
+  align-items:center;
+  gap:.75rem;
+  margin-bottom:1.25rem;
+}}
+.eyebrow::after{{content:"";flex:1;height:1px;background:var(--rule)}}
+
+/* ── masthead ───────────────────────────────── */
+.masthead{{
+  position:sticky;top:0;z-index:40;
+  background:color-mix(in srgb,var(--paper) 92%,transparent);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--rule-soft);
+}}
+.masthead__in{{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:62px}}
+.mark{{
+  font-family:var(--serif);
+  font-variant:small-caps;
+  letter-spacing:.1em;
+  font-size:1.375rem;
+  font-weight:600;
+  text-decoration:none;
+  display:flex;align-items:center;
+  min-height:44px;
+}}
+.masthead .btn{{display:none}}
+@media(min-width:48rem){{.masthead .btn{{display:inline-flex}}}}
+
+/* ── buttons — black, from the CHA wordmark ─── */
+.btn{{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  min-height:46px;padding:.6875rem 1.5rem;
+  font-family:var(--sans);font-size:.9375rem;font-weight:600;
+  letter-spacing:.01em;text-decoration:none;
+  border-radius:2px;border:1px solid transparent;
+  transition:background-color .18s ease,color .18s ease,border-color .18s ease;
+}}
+.btn--solid{{background:var(--ink);color:var(--paper)}}
+.btn--solid:hover{{background:#332A22}}
+.btn--ghost{{border-color:var(--ink);color:var(--ink)}}
+.btn--ghost:hover{{background:var(--ink);color:var(--paper)}}
+
+/* ── hero ───────────────────────────────────── */
+.hero{{padding-top:clamp(2.5rem,6vw,4.5rem)}}
+.hero__type{{max-width:52rem}}
+.hero h1{{
+  font-family:var(--serif);
+  font-variant:small-caps;
+  letter-spacing:.04em;
+  font-size:clamp(2.75rem,8vw,5.25rem);
+  line-height:1.02;
+}}
+.hero__lede{{
+  margin-top:1.25rem;
+  font-size:var(--s1);
+  color:var(--ink-2);
+  max-width:44ch;
+  line-height:1.6;
+}}
+.hero__actions{{margin-top:2rem;display:flex;flex-wrap:wrap;gap:.75rem}}
+.hero__figure{{
+  margin-top:clamp(2.5rem,5vw,3.5rem);
+  width:100%;
+  aspect-ratio:16/9;
+  max-height:clamp(260px,52vh,540px);
+  overflow:hidden;
+  background:var(--sand);
+}}
+.hero__figure img{{width:100%;height:100%;object-fit:cover}}
+.hero__facts{{
+  display:flex;flex-wrap:wrap;gap:.5rem 2rem;
+  padding-block:1.125rem;
+  border-bottom:1px solid var(--rule-soft);
+  font-size:var(--s-1);
+  color:var(--ink-2);
+}}
+.hero__facts b{{color:var(--ink);font-weight:600}}
+
+/* ── ingredient claims ──────────────────────── */
+.claims{{padding-block:var(--stack)}}
+.claims__grid{{display:grid;gap:0;border-top:1px solid var(--rule)}}
+@media(min-width:44rem){{.claims__grid{{grid-template-columns:repeat(2,1fr);column-gap:clamp(2rem,5vw,4rem)}}}}
+.claim{{padding-block:1.5rem;border-bottom:1px solid var(--rule-soft)}}
+.claim__top{{display:flex;align-items:baseline;gap:.75rem}}
+.claim__dot{{width:9px;height:9px;border-radius:50%;background:var(--hue);flex:none;position:relative;top:-.15rem}}
+.claim__name{{font-family:var(--serif);font-variant:small-caps;letter-spacing:.05em;font-size:1.375rem;font-weight:600}}
+.claim__body{{margin-top:.5rem;color:var(--ink-2);font-size:.9375rem;max-width:46ch}}
+
+/* ── signatures ─────────────────────────────── */
+.signatures{{padding-block:var(--stack);background:var(--paper-2)}}
+.sig__head{{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem;margin-bottom:2.5rem}}
+.sig__head h2{{font-family:var(--serif);font-variant:small-caps;letter-spacing:.05em;font-size:var(--s3)}}
+.sig__grid{{display:grid;gap:clamp(1.5rem,3vw,2.25rem)}}
+@media(min-width:38rem){{.sig__grid{{grid-template-columns:repeat(2,1fr)}}}}
+@media(min-width:62rem){{.sig__grid{{grid-template-columns:repeat(3,1fr)}}}}
+.sig{{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--rule-soft)}}
+.sig__media{{
+  aspect-ratio:1;overflow:hidden;
+  background:color-mix(in srgb,var(--hue) 16%,var(--card));
+  border-bottom:3px solid var(--hue);
+}}
+.sig__img{{width:100%;height:100%;object-fit:cover}}
+.sig__img--none{{width:100%;height:100%}}
+.sig__text{{padding:1.25rem 1.25rem 1.5rem;display:flex;flex-direction:column;flex:1;gap:.5rem}}
+.sig__name{{font-family:var(--serif);font-variant:small-caps;letter-spacing:.04em;font-size:1.375rem;font-weight:600;line-height:1.15}}
+.sig__desc{{font-size:.875rem;color:var(--ink-2);line-height:1.5;flex:1}}
+.sig__price{{
+  font-size:1rem;font-weight:600;
+  font-variant-numeric:tabular-nums;
+  padding-top:.625rem;border-top:1px solid var(--rule-soft);
+}}
+
+/* ── full menu ──────────────────────────────── */
+.menu{{padding-block:var(--stack)}}
+.menu__head{{margin-bottom:2.5rem;max-width:44rem}}
+.menu__head h2{{font-family:var(--serif);font-variant:small-caps;letter-spacing:.05em;font-size:var(--s3)}}
+.menu__head p{{margin-top:.75rem;color:var(--ink-2)}}
+.menu__cols{{columns:1;column-gap:clamp(2rem,4vw,3.5rem)}}
+@media(min-width:56rem){{.menu__cols{{columns:2}}}}
+.group{{break-inside:avoid;margin-bottom:2.75rem;display:inline-block;width:100%}}
+.group__name{{
+  font-family:var(--serif);font-variant:small-caps;letter-spacing:.06em;
+  font-size:1.25rem;font-weight:600;
+  display:flex;align-items:center;gap:.625rem;
+  padding-bottom:.75rem;border-bottom:1px solid var(--ink);
+  margin-bottom:.25rem;
+}}
+.group__dot{{width:8px;height:8px;border-radius:50%;background:var(--hue);flex:none}}
+.row{{
+  display:grid;
+  grid-template-columns:52px 1fr auto;
+  gap:.25rem .875rem;
+  align-items:center;
+  padding-block:.75rem;
+  border-bottom:1px solid var(--rule-soft);
+}}
+.row__thumb{{width:52px;height:52px;object-fit:cover;border-radius:2px;background:var(--paper-2)}}
+.row__thumb--none{{display:block;background:color-mix(in srgb,var(--hue) 18%,var(--paper-2))}}
+.row__text{{min-width:0}}
+.row__name{{font-size:.9375rem;font-weight:500;line-height:1.3}}
+.row__desc{{font-size:.8125rem;color:var(--ink-3);line-height:1.45;margin-top:.15rem}}
+.row__price{{font-size:.9375rem;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}}
+.group--chips .chips{{display:flex;flex-wrap:wrap;gap:.5rem;padding-top:.875rem}}
+.chip{{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.4375rem .75rem;
+  border:1px solid var(--rule);
+  border-radius:2px;
+  font-size:.8125rem;
+  background:var(--card);
+}}
+.chip b{{font-weight:600;font-variant-numeric:tabular-nums}}
+
+/* ── visit ──────────────────────────────────── */
+.visit{{padding-block:var(--stack);background:var(--paper-2)}}
+.visit__grid{{display:grid;gap:clamp(2.5rem,5vw,4rem)}}
+@media(min-width:52rem){{.visit__grid{{grid-template-columns:1fr 1fr}}}}
+.visit h2{{font-family:var(--serif);font-variant:small-caps;letter-spacing:.05em;font-size:var(--s3);margin-bottom:1.5rem}}
+.rowlink{{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  min-height:56px;padding-block:.5rem;
+  border-bottom:1px solid var(--rule);
+  text-decoration:none;transition:color .18s ease;
+}}
+.rowlink:hover{{color:var(--ink-2)}}
+.rowlink__k{{font-size:.6875rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);flex:none}}
+.rowlink__v{{text-align:right;font-size:.9375rem;line-height:1.4}}
+.hours{{width:100%;border-collapse:collapse}}
+.hours th,.hours td{{text-align:left;padding-block:.75rem;border-bottom:1px solid var(--rule);font-weight:400;font-size:.9375rem}}
+.hours td{{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}}
+
+/* ── footer ─────────────────────────────────── */
+.foot{{padding-block:2.5rem 6.5rem;font-size:.8125rem;color:var(--ink-3)}}
+@media(min-width:48rem){{.foot{{padding-bottom:3rem}}}}
+.foot__in{{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between}}
+.comp-note{{
+  margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid var(--rule);
+  font-size:.75rem;line-height:1.7;max-width:64ch;
+}}
+.comp-note b{{color:var(--ink-2);font-weight:600}}
+
+/* ── sticky order bar, mobile ───────────────── */
+.orderbar{{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  padding:.75rem var(--gut) calc(.75rem + env(safe-area-inset-bottom));
+  background:color-mix(in srgb,var(--paper) 95%,transparent);
+  backdrop-filter:blur(12px);
+  border-top:1px solid var(--rule);
+  display:flex;gap:.625rem;
+}}
+.orderbar .btn{{flex:1}}
+.orderbar .btn--ghost{{flex:0 0 auto;padding-inline:1.125rem}}
+@media(min-width:48rem){{.orderbar{{display:none}}}}
+
+@media(prefers-reduced-motion:reduce){{
+  *{{transition-duration:.01ms !important;animation-duration:.01ms !important}}
+}}
+</style>
+
+<header class="masthead">
+  <div class="wrap masthead__in">
+    <a class="mark" href="#top">Cha Redefine</a>
+    <a class="btn btn--solid" href="https://charedefinearcadia.toast.site/order/cha-redefine-houston" target="_blank" rel="noopener">Order now</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="wrap hero__type">
+      <h1>Tea, taken seriously.</h1>
+      <p class="hero__lede">Ceremonial grade matcha whisked to order. Taro paste and rice mochi made in our kitchen each morning. Espresso by ONYX. Coconut water cracked fresh.</p>
+      <div class="hero__actions">
+        <a class="btn btn--solid" href="https://charedefinearcadia.toast.site/order/cha-redefine-houston" target="_blank" rel="noopener">Order now</a>
+        <a class="btn btn--ghost" href="#menu">See the menu</a>
+      </div>
+    </div>
+    <figure class="hero__figure">{hero_media}</figure>
+    <div class="wrap">
+      <p class="hero__facts">
+        <span><b>Open</b> until 11PM daily</span>
+        <span><b>Bellaire Blvd</b> Suite C318</span>
+        <span><b>{n_drinks} drinks</b> across {n_cats} series</span>
+      </p>
+    </div>
+  </section>
+
+  <section class="claims">
+    <div class="wrap">
+      <p class="eyebrow">What we buy and what we make</p>
+      <div class="claims__grid">
+        <div class="claim" style="--hue:#7C9B4E">
+          <div class="claim__top"><span class="claim__dot"></span><h3 class="claim__name">Ceremonial grade matcha</h3></div>
+          <p class="claim__body">The grade you would drink on its own, not the cooking grade most shops sweeten into submission. Whisked to order, which is why it takes a minute longer.</p>
+        </div>
+        <div class="claim" style="--hue:#6B4526">
+          <div class="claim__top"><span class="claim__dot"></span><h3 class="claim__name">Espresso by ONYX</h3></div>
+          <p class="claim__body">Pulled from ONYX Coffee Lab beans — a specialty roaster's espresso in a boba shop, which is not a normal thing to find on Bellaire.</p>
+        </div>
+        <div class="claim" style="--hue:#B39BC6">
+          <div class="claim__top"><span class="claim__dot"></span><h3 class="claim__name">Taro paste and rice mochi</h3></div>
+          <p class="claim__body">Both made here. Real taro is a soft grey-purple, not the bright lavender of powder — that colour is how you tell. Mochi is cooked fresh daily.</p>
+        </div>
+        <div class="claim" style="--hue:#D9B57F">
+          <div class="claim__top"><span class="claim__dot"></span><h3 class="claim__name">Fresh coconut water</h3></div>
+          <p class="claim__body">Cracked from the coconut, never concentrate. It turns cloudy after a day, so we only open what we will use.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="signatures">
+    <div class="wrap">
+      <div class="sig__head">
+        <div>
+          <p class="eyebrow">Start here</p>
+          <h2>Six worth queueing for</h2>
+        </div>
+        <a class="btn btn--ghost" href="#menu">Full menu</a>
+      </div>
+      <div class="sig__grid">{signatures}</div>
+    </div>
+  </section>
+
+  <section class="menu" id="menu">
+    <div class="wrap">
+      <div class="menu__head">
+        <p class="eyebrow">Everything, with prices</p>
+        <h2>The full menu</h2>
+        <p>Every drink comes at your sweetness and ice level. These are the prices you pay at the counter — the same ones on our Toast ordering page.</p>
+      </div>
+      <div class="menu__cols">{menu}{toppings}</div>
+    </div>
+  </section>
+
+  <section class="visit">
+    <div class="wrap visit__grid">
+      <div>
+        <p class="eyebrow">When we're open</p>
+        <h2>Hours</h2>
+        <table class="hours">
+          <tbody>
+            <tr><th scope="row">Monday – Thursday</th><td>Until 11PM</td></tr>
+            <tr><th scope="row">Friday</th><td>Until 11PM</td></tr>
+            <tr><th scope="row">Saturday</th><td>Until 11PM</td></tr>
+            <tr><th scope="row">Sunday</th><td>Until 11PM</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <p class="eyebrow">Where to find us</p>
+        <h2>Visit</h2>
+        <a class="rowlink" href="https://maps.google.com/?q=9889+Bellaire+Blvd+Suite+C318+Houston+TX+77036" target="_blank" rel="noopener">
+          <span class="rowlink__k">Address</span>
+          <span class="rowlink__v">9889 Bellaire Blvd, Suite C318<br>Houston, TX 77036</span>
+        </a>
+        <a class="rowlink" href="tel:+16788143557">
+          <span class="rowlink__k">Phone</span>
+          <span class="rowlink__v">(678) 814-3557</span>
+        </a>
+        <a class="rowlink" href="https://charedefinearcadia.toast.site/order/cha-redefine-houston" target="_blank" rel="noopener">
+          <span class="rowlink__k">Order</span>
+          <span class="rowlink__v">Pick up on Toast</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div class="wrap">
+      <div class="foot__in">
+        <span>Cha Redefine · Houston, Texas</span>
+        <span class="display">茶</span>
+      </div>
+      <p class="comp-note">
+        <b>Design comp — not the finished site.</b> Drink names, descriptions, prices and
+        photography are pulled live from the shop's own Toast ordering page on 26 August 2026,
+        so the menu is real. Hours are shown as "until 11PM" because Toast publishes only the
+        closing time — opening times still need confirming.{hero_note}
+      </p>
+    </div>
+  </footer>
+
+</main>
+
+<nav class="orderbar" aria-label="Order">
+  <a class="btn btn--solid" href="https://charedefinearcadia.toast.site/order/cha-redefine-houston" target="_blank" rel="noopener">Order now</a>
+  <a class="btn btn--ghost" href="tel:+16788143557">Call</a>
+</nav>
+"""
+
+
+if __name__ == "__main__":
+    main()

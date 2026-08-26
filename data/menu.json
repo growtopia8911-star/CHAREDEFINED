@@ -1,0 +1,556 @@
+{
+  "shop": {
+    "name": "Cha Redefine",
+    "location": "Houston",
+    "address": "9889 Bellaire Blvd, Suite C318, Houston, TX 77036",
+    "orderUrl": "https://charedefinearcadia.toast.site/order/cha-redefine-houston",
+    "sourcedFrom": "Toast online ordering",
+    "sourcedOn": "2026-08-26"
+  },
+  "menu": [
+    {
+      "category": "Magnolia Banana Pudding",
+      "kind": "drink",
+      "items": [
+        {
+          "name": "Banana Pudding Matcha Latte 12oz",
+          "slug": "banana-pudding-matcha-latte-12oz",
+          "price": "$8.75",
+          "description": "Ceremonial Grad Matcha, House Made Fresh Banana Pudding, biscuit, Banana Chips",
+          "image": "assets/drinks/banana-pudding-matcha-latte-12oz.jpg"
+        },
+        {
+          "name": "Banana Pudding Coffee Latte 12oz",
+          "slug": "banana-pudding-coffee-latte-12oz",
+          "price": "$8.75",
+          "description": "Espresso By Onyx, House Made Fresh Banana Pudding, Biscuit, Banana Chip",
+          "image": "assets/drinks/banana-pudding-coffee-latte-12oz.jpg"
+        }
+      ]
+    },
+    {
+      "category": "superfood-Beet & Coconut",
+      "kind": "drink",
+      "items": [
+        {
+          "name": "Beet Bliss Cloud 16oz",
+          "slug": "beet-bliss-cloud-16oz",
+          "price": "$7.99",
+          "description": "Beets, Coconut Water, Vanilla Cold Foam",
+          "image": "assets/drinks/beet-bliss-cloud-16oz.jpg"
+        },
+        {
+          "name": "Coco Ruby Cooler 24oz",
+          "slug": "coco-ruby-cooler-24oz",
+          "price": "$7.99",
+          "description": "Fresh Coconut water, Beets Juice , Lemon & Lime",
+          "image": "assets/drinks/coco-ruby-cooler-24oz.jpg"
+        },
+        {
+          "name": "Chia Seed Passion Beet 24oz",
+          "slug": "chia-seed-passion-beet-24oz",
+          "price": "$7.99",
+          "description": "Beets, Passion fruit, Chia Seed, Jasmine Jade Tea",
+          "image": "assets/drinks/chia-seed-passion-beet-24oz.jpg"
+        }
+      ]
+    },
+    {
+      "category": "Longan& coconut",
+      "kind": "drink",
+      "items": [
+        {
+          "name": "CocoLongan ChewBlis 16oz",
+          "slug": "cocolongan-chewblis-16oz",
+          "price": "$8.50",
+          "description": "longan, coconut milk, jasmine tea jelly, Mochi water-chestnut, Crispy coconut chips",
+          "image": "assets/drinks/cocolongan-chewblis-16oz.jpg"
+        },
+        {
+          "name": "CocoLongan refresher 16oz",
+          "slug": "cocolongan-refresher-16oz",
+          "price": "$7.50",
+          "description": "Fresh coconut water, Longan Juice, Lemon and lime",
+          "image": "assets/drinks/cocolongan-refresher-16oz.jpg"
+        },
+        {
+          "name": "Matcha Coco chill 16oz",
+          "slug": "matcha-coco-chill-16oz",
+          "price": "$7.95",
+          "description": "Fresh Coconut Water, Ceremonial Grade Matcha Cheese Foam",
+          "image": "assets/drinks/matcha-coco-chill-16oz.jpg"
+        }
+      ]
+    },
+    {
+      "category": "Lychee & Rice Series",
+      "kind": "drink",
+      "items": [
+        {
+          "name": "Cha Cha Lychee Rice 16oz",
+          "slug": "cha-cha-lychee-rice-16oz",
+          "price": "$7.75",
+          "description": "Lychee Juice, Sweet Fermented Rice, Jasmine Tea Jelly, Jasmine Jade Tea, Fresh Milk.",
+          "image": "assets/drinks/cha-cha-lychee-rice-16oz.jpg"
+        },
+        {
+          "name": "Lychee Rice Smoothie 16oz",
+          "slug": "lychee-rice-smoothie-16oz",
+          "price": "$7.99",
+          "description": "Handmade Rice Mochi, Jasmine Tea Jelly, Lychee, Sweet Fermented Rice, Cheese Milk",
+          "image": "assets/drinks/lychee-rice-smoothie-16oz.jpg"
+        }
+      ]
+    },
+    {
+      "category": "Hojicha Series",
+      "kind": "drink",
+      "items": [
+        {
+          "name": "Hojicha Einspanner 12oz",
+          "slug": "hojicha-einspanner-12oz",
+          "price": "$7.95",
+          "description": "Organic Hojicha, Hojicha Cold Foam, Fresh Milk, Crispy Rice Puff",
+          "image": "assets/drinks/hojicha-einspanner-12oz.jpg"
+        },
+        {
+          "name": "Cha Cha Hojicha Smoothie 24oz",
+          "slug": "cha-cha-hojicha-smoothie-24oz",
+          "price": "$8.50",
+          "description": "Organic Hojicha, Oat, Handmade Rice Mochi, Cheese Milk, Fresh Milk Smotthie",
+          "image": "assets/drinks/cha-cha-hojicha-smoothie-24oz.jpg"
+        },
+        {
+          "name": "Cheese Hojicha boba Latte 16oz",
+          "slug": "cheese-hojicha-boba-latte-16oz",
+          "price": "$7.95",
+          "description": "",
+          "image": "assets/drinks/cheese-hojicha-boba-latte-16oz.jpg"
+        }
+      ]
+    },
+    {
+      "category": "Einspanner Drinks",
+      "kind": "drink",
+      "items": [
+        {
+          "name": "Matcha Einspanner 12oz ( no need straw)",
+          "slug": "matcha-einspanner-12oz-no-need-straw",
+          "price": "$7.95",
+          "description": "Ceremonial Grade Matcha, Vanilla Cold Foam, Fresh Milk, Crispy Puff Rice, Sea Salt",
+          "image": "assets/drinks/matcha-einspanner-12oz-no-need-straw.jpg"
+        },
+        {
+          "name": "Rice Einspanner 12oz( no need straw)",
+          "slug": "rice-einspanner-12oz-no-need-straw",
+          "price": "$7.50",
+          "description": "Espresso by ONYX, Fresh Milk, Vanilla Cold Foam, Crispy Puff Rice, Cocoa Powder, Sea Salt (This drink is not able to adjust anything)",
+          "image": "assets/drinks/rice-einspanner-12oz-no-need-straw.jpg"
+        }
+      ]
+    },
+    {
+      "category": "Mochi Series",
+      "kind": "drink",
+      "items": [
+        {
+          "name": "Mochi Taro 24oz",
+          "slug": "mochi-taro-24oz",
+          "price": "$7.95",
+          "description": "Seasonal Handmade Rice Mochi Drinks - Handmade rice mochi, Daily made fresh taro paste, Sri Lanka Black fresh milk tea.",
+          "image": "assets/drinks/mochi-taro-24oz.jpg"
+        },
+        {
+          "name": "Mochi strawberry 24oz",
+          "slug": "mochi-strawberry-24oz",
+          "price": "$8.25",
+          "description": "Seasonal Handmade Rice Mochi Drinks - Handmade rice mochi with fresh strawberry smoothie",
+          "image": "assets/drinks/mochi-strawberry-24oz.jpg"
+        },
+        {
+          "name": "Mochi Mango 24oz",
+          "slug": "mochi-mango-24oz",
+          "price": "$8.25",
+          "description": "Seasonal Handmade Rice Mochi Drinks - Handmade rice mochi, fresh mango smoothie",
+          "image": "assets/drinks/mochi-mango-24oz.jpg"
+        }
+      ]
+    },
+    {
+      "category": "Signature Milk Tea (Chappuccino & Cha Latte)",
+      "kind": "drink",
+      "items": [
+        {
+          "name": "Popping' Milk Tea 16oz",
+          "slug": "popping-milk-tea-16oz",
+          "price": "$7.75",
+          "description": "Barley Popping Boba, Popcorn Da Hong Pao Fresh Milk Tea, Coconut Milk, Vanilla Whipped Cream, Crispy Rice Puff",
+          "image": "assets/drinks/popping-milk-tea-16oz.jpg"
+        },
+        {
+          "name": "Sri Lanka Cha Latte",
+          "slug": "sri-lanka-cha-latte",
+          "price": "$6.50",
+          "description": "Sri Lanka Ceylon Black Tea with Fresh Milk , Whipped Cream, Honey Roast Pecan",
+          "image": "assets/drinks/sri-lanka-cha-latte.jpg"
+        },
+        {
+          "name": "Jasmine Chappuccino",
+          "slug": "jasmine-chappuccino",
+          "price": "$6.25",
+          "description": "Jasmine Green Tea with Fresh Milk",
+          "image": "assets/drinks/jasmine-chappuccino.jpg"
+        },
+        {
+          "name": "Peach Chappuccino",
+          "slug": "peach-chappuccino",
+          "price": "$6.00",
+          "description": "Refreshing Peach Oolong Tea with Fresh Milk",
+          "image": "assets/drinks/peach-chappuccino.jpg"
+        },
+        {
+          "name": "DaHongPao Chappuccino",
+          "slug": "dahongpao-chappuccino",
+          "price": "$6.00",
+          "description": "Da Hong Pao Oolong with Fresh Milk",
+          "image": "assets/drinks/dahongpao-chappuccino.jpg"
+        },
+        {
+          "name": "Osmanthus Chappuccino",
+          "slug": "osmanthus-chappuccino",
+          "price": "$6.50",
+          "description": "Osmanthus Oolong Tea with Fresh Milk",
+          "image": "assets/drinks/osmanthus-chappuccino.jpg"
+        },
+        {
+          "name": "Taro Tornado 24oz",
+          "slug": "taro-tornado-24oz",
+          "price": "$7.75",
+          "description": "Fresh Taro Paste, Siri Lanka Black Tea with Fresh Milk, Brown Sugar Boba",
+          "image": "assets/drinks/taro-tornado-24oz.jpg"
+        }
+      ]
+    },
+    {
+      "category": "Ceremonial Grade Matcha",
+      "kind": "drink",
+      "items": [
+        {
+          "name": "Matcha Latte (Ice)",
+          "slug": "matcha-latte-ice",
+          "price": "$6.50",
+          "description": "Ceremonial Grade Matcha, Fresh Milk",
+          "image": "assets/drinks/matcha-latte-ice.jpg"
+        },
+        {
+          "name": "Matcha Matcha( no need straw)",
+          "slug": "matcha-matcha-no-need-straw",
+          "price": "$7.95",
+          "description": "Ceremonial Grade Matcha, Matcha Cheese Foam",
+          "image": "assets/drinks/matcha-matcha-no-need-straw.jpg"
+        },
+        {
+          "name": "BOM Matcha Latte",
+          "slug": "bom-matcha-latte",
+          "price": "$7.75",
+          "description": "Ceremonial Grade Matcha, Blueberry Puree, Oat Milk, Blue Spirulina",
+          "image": "assets/drinks/bom-matcha-latte.jpg"
+        },
+        {
+          "name": "Matcha Tornado slush24oz",
+          "slug": "matcha-tornado-slush24oz",
+          "price": "$8.50",
+          "description": "Ceremonial Grade Matcha Smoothie, Fresh Taro Paste",
+          "image": "assets/drinks/matcha-tornado-slush24oz.jpg"
+        },
+        {
+          "name": "Matcha Latte (Hot)",
+          "slug": "matcha-latte-hot",
+          "price": "$7.25",
+          "description": "Ceremonial Grade Matcha with 3 shots, Whole Milk or Milk Alternative",
+          "image": "assets/drinks/matcha-latte-hot.jpg"
+        }
+      ]
+    },
+    {
+      "category": "Cha X Fruits",
+      "kind": "drink",
+      "items": [
+        {
+          "name": "Lemon Cha 24oz",
+          "slug": "lemon-cha-24oz",
+          "price": "$6.50",
+          "description": "Lemon, lime, Jasmine Green/Sri Lanka Ceylon Black/Peach Oolong Tea",
+          "image": "assets/drinks/lemon-cha-24oz.jpg"
+        },
+        {
+          "name": "Strawberry Glow Slush 24oz",
+          "slug": "strawberry-glow-slush-24oz",
+          "price": "$7.00",
+          "description": "Ice blended drink, Fresh Strawberry with Jasmine Green Tea",
+          "image": "assets/drinks/strawberry-glow-slush-24oz.jpg"
+        },
+        {
+          "name": "Mango Mango",
+          "slug": "mango-mango",
+          "price": "$7.95",
+          "description": "Ice blended drink, Fresh Mango with Jasmine Green Tea, Agar Boba, Coconut Milk, Grapefruis",
+          "image": "assets/drinks/mango-mango.jpg"
+        },
+        {
+          "name": "Mango Passion Chill 24oz",
+          "slug": "mango-passion-chill-24oz",
+          "price": "$7.95",
+          "description": "Jasmine Tea Jelly, Mango, Passion Fruits, Jasmine Green Tea",
+          "image": "assets/drinks/mango-passion-chill-24oz.jpg"
+        }
+      ]
+    },
+    {
+      "category": "Coffee",
+      "kind": "drink",
+      "items": [
+        {
+          "name": "Americano",
+          "slug": "americano",
+          "price": "$4.50",
+          "description": "Espresso by ONYX",
+          "image": "assets/drinks/americano.jpg"
+        },
+        {
+          "name": "Americloud 16oz",
+          "slug": "americloud-16oz",
+          "price": "$7.50",
+          "description": "Double Espresso by ONYX, House made Vanilla Cold Foam",
+          "image": "assets/drinks/americloud-16oz.jpg"
+        },
+        {
+          "name": "Salty Butter Latte",
+          "slug": "salty-butter-latte",
+          "price": "$7.75",
+          "description": "House made salty butter caramel milk, Espresso by ONYX",
+          "image": "assets/drinks/salty-butter-latte.jpg"
+        },
+        {
+          "name": "Dirty Avocado",
+          "slug": "dirty-avocado",
+          "price": "$7.50",
+          "description": "House Avocado Smoothie, Organic Espresso Shots",
+          "image": "assets/drinks/dirty-avocado.jpg"
+        }
+      ]
+    },
+    {
+      "category": "Non Caffeinated & Kids Menu",
+      "kind": "drink",
+      "items": [
+        {
+          "name": "Coco Strawberry",
+          "slug": "coco-strawberry",
+          "price": "$7.50",
+          "description": "Fresh Strawberries, Coconut milk, Agar Boba, House Avocado Snoothie",
+          "image": "assets/drinks/coco-strawberry.jpg"
+        },
+        {
+          "name": "Coco Mango",
+          "slug": "coco-mango",
+          "price": "$7.50",
+          "description": "Fresh Mango, Grapefruits, Coconut milk, Agar Boba, House Avocado Snoothie",
+          "image": "assets/drinks/coco-mango.jpg"
+        },
+        {
+          "name": "Taro Taro 24oz",
+          "slug": "taro-taro-24oz",
+          "price": "$7.75",
+          "description": "Housemade Fresh Taro Paste, Fresh Milk, Brown Sugar",
+          "image": "assets/drinks/taro-taro-24oz.jpg"
+        },
+        {
+          "name": "Brown Sugar Boba Latte",
+          "slug": "brown-sugar-boba-latte",
+          "price": "$6.95",
+          "description": "Brown Sugar Boba, Fresh Milk, Whipped Cream, Honey Roasted Pecan",
+          "image": "assets/drinks/brown-sugar-boba-latte.jpg"
+        }
+      ]
+    },
+    {
+      "category": "Cream Foam Cha",
+      "kind": "drink",
+      "items": [
+        {
+          "name": "Peach Cream Dream",
+          "slug": "peach-cream-dream",
+          "price": "$6.50",
+          "description": "Peach Oolong Tea, House made Foam",
+          "image": "assets/drinks/peach-cream-dream.jpg"
+        },
+        {
+          "name": "Osmanthus Cream Foam Cha",
+          "slug": "osmanthus-cream-foam-cha",
+          "price": "$6.50",
+          "description": "Osmanthus Oolong Tea, House made Foam",
+          "image": "assets/drinks/osmanthus-cream-foam-cha.jpg"
+        },
+        {
+          "name": "Jasmine Jade Cream Foam Cha",
+          "slug": "jasmine-jade-cream-foam-cha",
+          "price": "$6.50",
+          "description": "Jasmine Green Tea, House made Foam",
+          "image": "assets/drinks/jasmine-jade-cream-foam-cha.jpg"
+        },
+        {
+          "name": "DaHongPao Cream Foam Cha",
+          "slug": "dahongpao-cream-foam-cha",
+          "price": "$6.50",
+          "description": "Da Hong Pao Oolong Tea, House Selected Cream Foam",
+          "image": "assets/drinks/dahongpao-cream-foam-cha.jpg"
+        },
+        {
+          "name": "Sir Lanka Cream Foam",
+          "slug": "sir-lanka-cream-foam",
+          "price": "$6.50",
+          "description": "",
+          "image": null
+        }
+      ]
+    },
+    {
+      "category": "Cha",
+      "kind": "drink",
+      "items": [
+        {
+          "name": "Refreshing Peach Cha",
+          "slug": "refreshing-peach-cha",
+          "price": "$4.75",
+          "description": "",
+          "image": "assets/drinks/refreshing-peach-cha.jpg"
+        },
+        {
+          "name": "Osmanthus Oolong Cha",
+          "slug": "osmanthus-oolong-cha",
+          "price": "$5.00",
+          "description": "",
+          "image": "assets/drinks/osmanthus-oolong-cha.jpg"
+        },
+        {
+          "name": "Jasmine Jade Cha",
+          "slug": "jasmine-jade-cha",
+          "price": "$5.00",
+          "description": "",
+          "image": "assets/drinks/jasmine-jade-cha.jpg"
+        },
+        {
+          "name": "Da Hong Pao Cha",
+          "slug": "da-hong-pao-cha",
+          "price": "$4.75",
+          "description": "",
+          "image": null
+        }
+      ]
+    },
+    {
+      "category": "cups",
+      "kind": "topping",
+      "items": [
+        {
+          "name": "Extra cup",
+          "slug": "extra-cup",
+          "price": "$0.75",
+          "description": "",
+          "image": null
+        }
+      ]
+    },
+    {
+      "category": "Topping",
+      "kind": "topping",
+      "items": [
+        {
+          "name": "Brown sugar boba",
+          "slug": "brown-sugar-boba",
+          "price": "$0.75",
+          "description": "",
+          "image": null
+        },
+        {
+          "name": "Agar boba",
+          "slug": "agar-boba",
+          "price": "$0.75",
+          "description": "",
+          "image": null
+        },
+        {
+          "name": "Barley",
+          "slug": "barley",
+          "price": "$0.85",
+          "description": "",
+          "image": null
+        },
+        {
+          "name": "Homemade taro paste",
+          "slug": "homemade-taro-paste",
+          "price": "$1.75",
+          "description": "",
+          "image": null
+        },
+        {
+          "name": "Homemade mochi",
+          "slug": "homemade-mochi",
+          "price": "$1.75",
+          "description": "",
+          "image": null
+        },
+        {
+          "name": "Lychee jelly",
+          "slug": "lychee-jelly",
+          "price": "$0.75",
+          "description": "",
+          "image": null
+        },
+        {
+          "name": "Jasmine tea jelly",
+          "slug": "jasmine-tea-jelly",
+          "price": "$0.75",
+          "description": "",
+          "image": null
+        },
+        {
+          "name": "Avocado foam",
+          "slug": "avocado-foam",
+          "price": "$1.75",
+          "description": "",
+          "image": null
+        },
+        {
+          "name": "Hojicha foam",
+          "slug": "hojicha-foam",
+          "price": "$1.50",
+          "description": "",
+          "image": null
+        },
+        {
+          "name": "Vanilla foam",
+          "slug": "vanilla-foam",
+          "price": "$1.50",
+          "description": "",
+          "image": null
+        },
+        {
+          "name": "Matcha cheese foam",
+          "slug": "matcha-cheese-foam",
+          "price": "$1.75",
+          "description": "",
+          "image": null
+        },
+        {
+          "name": "Ferminated rice",
+          "slug": "ferminated-rice",
+          "price": "$0.75",
+          "description": "",
+          "image": null
+        }
+      ]
+    }
+  ]
+}
