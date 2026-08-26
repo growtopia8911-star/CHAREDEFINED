@@ -374,12 +374,33 @@ def main():
     # is what you want when sending it to someone directly.
     if "--standalone" in sys.argv:
         head, rest = html.split('<header class="masthead">', 1)
+        # A 茶 on the site's cream ground, drawn inline so there is no icon file.
+        favicon = (
+            "data:image/svg+xml,"
+            "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E"
+            "%3Crect width='64' height='64' fill='%23F4EBDD'/%3E"
+            "%3Ctext x='32' y='47' font-family='Georgia,serif' font-size='44' "
+            "text-anchor='middle' fill='%2315120F'%3E%E8%8C%B6%3C/text%3E%3C/svg%3E"
+        )
+        description = (
+            "Ceremonial grade matcha, handmade rice mochi and house-made taro paste. "
+            "Craft boba on Bellaire Blvd in Houston Chinatown \u2014 order pickup online."
+        )
+        # bare & is invalid inside an attribute value
+        og_title = "Cha Redefine \u2014 Ceremonial Matcha &amp; Handmade Mochi | Houston, TX"
         html = (
             '<!doctype html>\n<html lang="en">\n<head>\n'
             '<meta charset="utf-8">\n'
             '<meta name="viewport" content="width=device-width,initial-scale=1">\n'
-            '<meta name="description" content="Cha Redefine — craft boba, ceremonial grade '
-            'matcha and ONYX espresso on Bellaire Blvd in Houston Chinatown.">\n'
+            f'<meta name="description" content="{description}">\n'
+            f'<link rel="icon" href="{favicon}">\n'
+            '<meta property="og:type" content="website">\n'
+            f'<meta property="og:title" content="{og_title}">\n'
+            f'<meta property="og:description" content="{description}">\n'
+            '<meta property="og:locale" content="en_US">\n'
+            '<!-- REPLACE WITH A REAL HOSTED IMAGE URL, 1200x630, BEFORE LAUNCH -->\n'
+            '<meta property="og:image" content="https://example.com/cha-redefine-og.jpg">\n'
+            '<meta name="twitter:card" content="summary_large_image">\n'
             + head
             + '</head>\n<body>\n<header class="masthead">'
             + rest
@@ -391,7 +412,7 @@ def main():
     print(f"wrote {OUT}  ({os.path.getsize(OUT)/1_000_000:.1f} MB)")
 
 
-TEMPLATE = """<title>Cha Redefine</title>
+TEMPLATE = """<title>Cha Redefine \u2014 Ceremonial Matcha &amp; Handmade Mochi | Houston, TX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@400;500;600&display=swap">
@@ -812,7 +833,37 @@ a{{color:inherit}}
 /* ── footer ─────────────────────────────────── */
 .foot{{padding-block:2.5rem 6.5rem;font-size:.8125rem;color:var(--ink-3)}}
 @media(min-width:48rem){{.foot{{padding-bottom:3rem}}}}
-.foot__in{{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between}}
+.foot__in{{
+  display:grid;gap:2rem;
+  padding-bottom:2rem;border-bottom:1px solid var(--rule);
+}}
+@media(min-width:44rem){{.foot__in{{grid-template-columns:1.2fr 1fr 1fr}}}}
+.foot__name{{
+  font-family:var(--serif);font-variant:small-caps;letter-spacing:.1em;
+  font-size:1.375rem;font-weight:600;color:var(--ink);
+}}
+.foot__col{{display:flex;flex-direction:column;gap:.375rem}}
+.foot__k{{
+  font-size:.6875rem;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:.25rem;
+}}
+.foot__col a{{
+  color:var(--ink-2);text-decoration:none;
+  min-height:32px;display:inline-flex;align-items:center;
+  transition:color .18s ease;
+}}
+.foot__col a:hover{{color:var(--ink)}}
+.foot__social{{
+  display:inline-flex;align-items:center;gap:.5rem;
+  min-height:44px;color:var(--ink-2);text-decoration:none;
+  transition:color .18s ease;
+}}
+.foot__social:hover{{color:var(--ink)}}
+.foot__social svg{{width:19px;height:19px;flex:none}}
+.foot__legal{{
+  display:flex;flex-wrap:wrap;gap:.75rem 1.5rem;
+  justify-content:space-between;padding-top:1.5rem;
+}}
 .comp-note{{
   margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid var(--rule);
   font-size:.75rem;line-height:1.7;max-width:64ch;
@@ -1004,7 +1055,31 @@ a{{color:inherit}}
   <footer class="foot">
     <div class="wrap">
       <div class="foot__in">
-        <span>Cha Redefine · Houston, Texas</span>
+        <div class="foot__col">
+          <p class="foot__name">Cha Redefine</p>
+          <p>9889 Bellaire Blvd, Suite C318<br>Houston, TX 77036</p>
+          <p>Open daily until 11 PM</p>
+        </div>
+
+        <div class="foot__col">
+          <p class="foot__k">Get in touch</p>
+          <!-- VERIFY: 678 is an Atlanta area code, confirm this is the shop's real number -->
+          <a href="tel:+16788143557">(678) 814-3557</a>
+          <a href="https://maps.google.com/?q=9889+Bellaire+Blvd+Suite+C318+Houston+TX+77036" target="_blank" rel="noopener">Find us on the map</a>
+          <!-- GET REAL HANDLE FROM OWNER -->
+          <a class="foot__social" href="https://instagram.com/PLACEHOLDER" target="_blank" rel="noopener">{ig_svg}<span>Instagram</span></a>
+        </div>
+
+        <div class="foot__col">
+          <p class="foot__k">Order</p>
+          <a href="https://charedefinearcadia.toast.site/order/cha-redefine-houston" target="_blank" rel="noopener">Order pickup on Toast</a>
+          <a href="#menu">See the full menu</a>
+          <a href="#story">Our story</a>
+        </div>
+      </div>
+
+      <div class="foot__legal">
+        <span>&copy; 2026 Cha Redefine &middot; Houston, Texas</span>
         <span class="display">茶</span>
       </div>
       <p class="comp-note">
@@ -1015,6 +1090,38 @@ a{{color:inherit}}
       </p>
     </div>
   </footer>
+
+  <!--
+    Opening times below are the same placeholders as the Hours table.
+    Update both together once the owner confirms.
+  -->
+  <script type="application/ld+json">
+  {{
+    "@context": "https://schema.org",
+    "@type": "CafeOrCoffeeShop",
+    "name": "Cha Redefine",
+    "description": "Ceremonial grade matcha, handmade rice mochi and house taro paste on Bellaire Blvd in Houston Chinatown.",
+    "servesCuisine": "Bubble Tea",
+    "priceRange": "$$",
+    "address": {{
+      "@type": "PostalAddress",
+      "streetAddress": "9889 Bellaire Blvd, Suite C318",
+      "addressLocality": "Houston",
+      "addressRegion": "TX",
+      "postalCode": "77036",
+      "addressCountry": "US"
+    }},
+    "telephone": "+1-678-814-3557",
+    "menu": "https://charedefinearcadia.toast.site/order/cha-redefine-houston",
+    "acceptsReservations": false,
+    "openingHoursSpecification": [{{
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+      "opens": "11:00",
+      "closes": "23:00"
+    }}]
+  }}
+  </script>
 
 </main>
 
