@@ -102,12 +102,122 @@ def esc(s):
             .replace(">", "&gt;").replace('"', "&quot;"))
 
 
-def tidy(name):
-    """Toast names carry ordering cruft. Keep the size, drop the instructions."""
-    s = re.sub(r"\(\s*no need straw\s*\)", "", name, flags=re.I)
-    s = re.sub(r"\s+", " ", s).strip()
-    s = re.sub(r"(\d+)oz", r"\1 oz", s)
-    return s
+# ---------------------------------------------------------------------------
+# Copy normalisation
+#
+# Toast is a point-of-sale system; its item names and descriptions are typed by
+# staff between orders and carry typos, inconsistent casing and stuck-together
+# sizes. Everything below fixes the DISPLAY copy only - data/menu.json stays a
+# faithful record of what Toast actually says, so a re-scrape never silently
+# reintroduces a fix we already made.
+# ---------------------------------------------------------------------------
+
+# Outright typos, matched case-insensitively as whole words.
+TYPO_FIXES = [
+    (r"\bCeremonial Grad\b",  "Ceremonial Grade"),
+    (r"\bSmotthie\b",         "Smoothie"),
+    (r"\bFerminated\b",       "Fermented"),
+    (r"\bSir Lanka\b",        "Sri Lanka"),
+    (r"\bChewBlis\b",         "Chew Bliss"),
+    (r"\bwater-\s*chestnut\b", "Water Chestnut"),
+    (r"\bslush(?=\d)",         "Slush "),
+]
+
+# Phrases replaced wholesale.
+PHRASE_FIXES = [
+    (r"[,\s]*\(?\s*this drink is not able to adjust anything\s*\)?",
+     " \u2014 served as-is, no modifications"),
+    (r"\(\s*no need straw\s*\)", ""),
+]
+
+# Words that keep their own casing rather than being title-cased.
+ACRONYMS = {"onyx": "ONYX", "bom": "BOM", "diy": "DIY"}
+
+# Connectors that stay lowercase unless they open a phrase.
+SMALL_WORDS = {"and", "or", "with", "of", "in", "on", "at", "to", "a", "an", "the", "by"}
+
+
+def _fix_typos(text):
+    for pat, rep in TYPO_FIXES:
+        text = re.sub(pat, rep, text, flags=re.I)
+    return text
+
+
+def _apply_phrases(text):
+    """Run LAST. These replacements carry their own punctuation and casing,
+    so they must not be fed through the spacing or title-case passes."""
+    for pat, rep in PHRASE_FIXES:
+        text = re.sub(pat, rep, text, flags=re.I)
+    return re.sub(r"\s{2,}", " ", text).strip(" ,;")
+
+
+def _fix_spacing(text):
+    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"\s+([,.;])", r"\1", text)      # " ," -> ","
+    text = re.sub(r"([,;])(?=\S)", r"\1 ", text)   # ",x" -> ", x"
+    text = re.sub(r"\s*-\s*", " - ", text)         # spaced en-dash style
+    return text.strip(" ,;-")
+
+
+def _size_format(text):
+    """12oz / 24 OZ / slush24oz -> 12 oz, 24 oz - always spaced and lowercase."""
+    return re.sub(r"(\d+)\s*oz\b", r"\1 oz", text, flags=re.I)
+
+
+def smart_title(text):
+    """Title-case an ingredient list without wrecking brand casing.
+
+    A token that already carries an internal capital (CocoLongan, DaHongPao)
+    is left exactly as typed - those are deliberate, not mistakes.
+    """
+    def cap_token(tok, first):
+        if not tok:
+            return tok
+        low = tok.lower()
+        if low.strip(".,") in ACRONYMS:
+            return tok.replace(tok.strip(".,"), ACRONYMS[low.strip(".,")])
+        if re.search(r"[a-z][A-Z]", tok):   # CocoLongan, ChewBliss
+            return tok
+        if tok.isupper() and len(tok) > 1:  # already an acronym
+            return tok
+        if low in SMALL_WORDS and not first:
+            return low
+        m = re.search(r"[a-z]", low)
+        if not m:
+            return low
+        i = m.start()
+        return low[:i] + low[i].upper() + low[i + 1:]
+
+    out = []
+    for segment in re.split(r"(,\s*)", text):
+        if not segment or segment.startswith(","):
+            out.append(segment)
+            continue
+        words = segment.split(" ")
+        out.append(" ".join(
+            cap_token(w, i == 0) for i, w in enumerate(words)
+        ))
+    return "".join(out)
+
+
+def clean_name(name):
+    """Display name: typos fixed, casing normalised, sizes spaced last."""
+    s = _fix_typos(name)
+    s = _fix_spacing(s)
+    s = smart_title(s)
+    s = _size_format(s)      # before phrases, so casing cannot produce "Oz"
+    return _apply_phrases(s)
+
+
+def clean_desc(desc):
+    """Description: same treatment, kept as a Title Case ingredient list."""
+    if not desc:
+        return ""
+    s = _fix_typos(desc)
+    s = _fix_spacing(s)
+    s = smart_title(s)
+    s = _size_format(s)
+    return _apply_phrases(s)
 
 
 # Toast's category names are typed by staff and carry casing and spacing
@@ -169,15 +279,15 @@ def main():
         sec, item = by_slug[slug]
         hue = hue_for(sec["category"])
         img = images.get(slug)
-        media = (f'<img class="sig__img" src="{img}" alt="{esc(tidy(item["name"]))}" '
+        media = (f'<img class="sig__img" src="{img}" alt="{esc(clean_name(item["name"]))}" '
                  f'loading="lazy" decoding="async" width="440" height="440">'
                  if img else '<div class="sig__img sig__img--none"></div>')
         sig_html.append(f"""
         <article class="sig">
           <div class="sig__media" style="--hue:{hue}">{media}</div>
           <div class="sig__text">
-            <h3 class="sig__name">{esc(tidy(item['name']))}</h3>
-            <p class="sig__desc">{esc(item['description'])}</p>
+            <h3 class="sig__name">{esc(clean_name(item['name']))}</h3>
+            <p class="sig__desc">{esc(clean_desc(clean_desc(item["description"])))}</p>
             <p class="sig__price">{esc(item['price'])}</p>
           </div>
         </article>""")
@@ -195,13 +305,13 @@ def main():
             thumb = (f'<img class="row__thumb" src="{img}" alt="" loading="lazy" '
                      f'decoding="async" width="440" height="440">'
                      if img else '<span class="row__thumb row__thumb--none" aria-hidden="true"></span>')
-            desc = (f'<p class="row__desc">{esc(item["description"])}</p>'
+            desc = (f'<p class="row__desc">{esc(clean_desc(item["description"]))}</p>'
                     if item["description"] else "")
             rows.append(f"""
             <li class="row">
               {thumb}
               <div class="row__text">
-                <h4 class="row__name">{esc(tidy(item['name']))}</h4>
+                <h4 class="row__name">{esc(clean_name(item['name']))}</h4>
                 {desc}
               </div>
               <span class="row__price">{esc(item['price'])}</span>
@@ -215,7 +325,7 @@ def main():
     top_html = []
     for sec in topping_secs:
         chips = "".join(
-            f'<li class="chip"><span>{esc(tidy(i["name"]))}</span><b>{esc(i["price"])}</b></li>'
+            f'<li class="chip"><span>{esc(clean_name(i["name"]))}</span><b>{esc(i["price"])}</b></li>'
             for i in sec["items"]
         )
         top_html.append(f"""
