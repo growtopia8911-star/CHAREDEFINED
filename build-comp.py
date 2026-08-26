@@ -596,7 +596,10 @@ a{{color:inherit}}
 .rowlink__v{{text-align:right;font-size:.9375rem;line-height:1.4}}
 .hours{{width:100%;border-collapse:collapse}}
 .hours th,.hours td{{text-align:left;padding-block:.75rem;border-bottom:1px solid var(--rule);font-weight:400;font-size:.9375rem}}
-.hours td{{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}}
+.hours td{{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}}
+/* every row is styled identically - no day is highlighted or selected */
+.hours tr{{background:none}}
+.hours tr:last-child th,.hours tr:last-child td{{border-bottom:none}}
 
 /* ── footer ─────────────────────────────────── */
 .foot{{padding-block:2.5rem 6.5rem;font-size:.8125rem;color:var(--ink-3)}}
@@ -660,7 +663,7 @@ a{{color:inherit}}
     <figure class="hero__figure">{hero_media}</figure>
     <div class="wrap">
       <p class="hero__facts">
-        <span><b>Open</b> until 11PM daily</span>
+        <span><b>Open</b> daily until 11 PM</span>
         <span><b>Bellaire Blvd</b> Suite C318</span>
         <span><b>{n_drinks} drinks</b> across {n_cats} series</span>
       </p>
@@ -720,12 +723,19 @@ a{{color:inherit}}
       <div>
         <p class="eyebrow">When we're open</p>
         <h2>Hours</h2>
+        <!--
+          Toast publishes only the CLOSING time for each location, never the
+          opening time. Every opening time below is a placeholder.
+        -->
         <table class="hours">
           <tbody>
-            <tr><th scope="row">Monday – Thursday</th><td>Until 11PM</td></tr>
-            <tr><th scope="row">Friday</th><td>Until 11PM</td></tr>
-            <tr><th scope="row">Saturday</th><td>Until 11PM</td></tr>
-            <tr><th scope="row">Sunday</th><td>Until 11PM</td></tr>
+            <tr><th scope="row">Monday</th><td>11:00 AM – 11:00 PM</td></tr><!-- CONFIRM OPENING TIME WITH OWNER -->
+            <tr><th scope="row">Tuesday</th><td>11:00 AM – 11:00 PM</td></tr><!-- CONFIRM OPENING TIME WITH OWNER -->
+            <tr><th scope="row">Wednesday</th><td>11:00 AM – 11:00 PM</td></tr><!-- CONFIRM OPENING TIME WITH OWNER -->
+            <tr><th scope="row">Thursday</th><td>11:00 AM – 11:00 PM</td></tr><!-- CONFIRM OPENING TIME WITH OWNER -->
+            <tr><th scope="row">Friday</th><td>11:00 AM – 11:00 PM</td></tr><!-- CONFIRM OPENING TIME WITH OWNER -->
+            <tr><th scope="row">Saturday</th><td>11:00 AM – 11:00 PM</td></tr><!-- CONFIRM OPENING TIME WITH OWNER -->
+            <tr><th scope="row">Sunday</th><td>11:00 AM – 11:00 PM</td></tr><!-- CONFIRM OPENING TIME WITH OWNER -->
           </tbody>
         </table>
       </div>
@@ -736,6 +746,7 @@ a{{color:inherit}}
           <span class="rowlink__k">Address</span>
           <span class="rowlink__v">9889 Bellaire Blvd, Suite C318<br>Houston, TX 77036</span>
         </a>
+        <!-- VERIFY: 678 is an Atlanta area code, confirm this is the shop's real number -->
         <a class="rowlink" href="tel:+16788143557">
           <span class="rowlink__k">Phone</span>
           <span class="rowlink__v">(678) 814-3557</span>
