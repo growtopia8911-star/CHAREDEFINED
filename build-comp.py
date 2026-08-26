@@ -944,8 +944,7 @@ a{{color:inherit}}
     <nav class="nav" id="site-nav" aria-label="Primary">
       <a class="nav__link" href="#menu">Menu</a>
       <a class="nav__link" href="#visit">Visit</a>
-      <!-- GET REAL HANDLE FROM OWNER -->
-      <a class="nav__ig" href="https://instagram.com/PLACEHOLDER" target="_blank" rel="noopener" aria-label="Cha Redefine on Instagram">{ig_svg}</a>
+      <a class="nav__ig" href="https://www.instagram.com/charedefine" target="_blank" rel="noopener" aria-label="Cha Redefine on Instagram">{ig_svg}</a>
     </nav>
 
     <div class="masthead__actions">
@@ -1033,18 +1032,19 @@ a{{color:inherit}}
         <p class="eyebrow">When we're open</p>
         <h2>Hours</h2>
         <!--
-          Toast publishes only the CLOSING time for each location, never the
-          opening time. Every opening time below is a placeholder.
+          Toast publishes only closing times. The 11:00 AM opening was
+          confirmed by the owner on 2026-08-26. If these ever change, update
+          the CafeOrCoffeeShop JSON-LD near the end of the page to match.
         -->
         <table class="hours">
           <tbody>
-            <tr><th scope="row">Monday</th><td>11:00 AM – 11:00 PM</td></tr><!-- CONFIRM OPENING TIME WITH OWNER -->
-            <tr><th scope="row">Tuesday</th><td>11:00 AM – 11:00 PM</td></tr><!-- CONFIRM OPENING TIME WITH OWNER -->
-            <tr><th scope="row">Wednesday</th><td>11:00 AM – 11:00 PM</td></tr><!-- CONFIRM OPENING TIME WITH OWNER -->
-            <tr><th scope="row">Thursday</th><td>11:00 AM – 11:00 PM</td></tr><!-- CONFIRM OPENING TIME WITH OWNER -->
-            <tr><th scope="row">Friday</th><td>11:00 AM – 11:00 PM</td></tr><!-- CONFIRM OPENING TIME WITH OWNER -->
-            <tr><th scope="row">Saturday</th><td>11:00 AM – 11:00 PM</td></tr><!-- CONFIRM OPENING TIME WITH OWNER -->
-            <tr><th scope="row">Sunday</th><td>11:00 AM – 11:00 PM</td></tr><!-- CONFIRM OPENING TIME WITH OWNER -->
+            <tr><th scope="row">Monday</th><td>11:00 AM – 11:00 PM</td></tr>
+            <tr><th scope="row">Tuesday</th><td>11:00 AM – 11:00 PM</td></tr>
+            <tr><th scope="row">Wednesday</th><td>11:00 AM – 11:00 PM</td></tr>
+            <tr><th scope="row">Thursday</th><td>11:00 AM – 11:00 PM</td></tr>
+            <tr><th scope="row">Friday</th><td>11:00 AM – 11:00 PM</td></tr>
+            <tr><th scope="row">Saturday</th><td>11:00 AM – 11:00 PM</td></tr>
+            <tr><th scope="row">Sunday</th><td>11:00 AM – 11:00 PM</td></tr>
           </tbody>
         </table>
       </div>
@@ -1055,10 +1055,9 @@ a{{color:inherit}}
           <span class="rowlink__k">Address</span>
           <span class="rowlink__v">9889 Bellaire Blvd, Suite C318<br>Houston, TX 77036</span>
         </a>
-        <!-- VERIFY: 678 is an Atlanta area code, confirm this is the shop's real number -->
-        <a class="rowlink" href="tel:+16788143557">
+        <a class="rowlink" href="tel:+17134856158">
           <span class="rowlink__k">Phone</span>
-          <span class="rowlink__v">(678) 814-3557</span>
+          <span class="rowlink__v">(713) 485-6158</span>
         </a>
         <a class="rowlink" href="https://charedefinearcadia.toast.site/order/cha-redefine-houston" target="_blank" rel="noopener">
           <span class="rowlink__k">Order</span>
@@ -1088,11 +1087,9 @@ a{{color:inherit}}
 
         <div class="foot__col">
           <p class="foot__k">Get in touch</p>
-          <!-- VERIFY: 678 is an Atlanta area code, confirm this is the shop's real number -->
-          <a href="tel:+16788143557">(678) 814-3557</a>
+            <a href="tel:+17134856158">(713) 485-6158</a>
           <a href="https://maps.google.com/?q=9889+Bellaire+Blvd+Suite+C318+Houston+TX+77036" target="_blank" rel="noopener">Find us on the map</a>
-          <!-- GET REAL HANDLE FROM OWNER -->
-          <a class="foot__social" href="https://instagram.com/PLACEHOLDER" target="_blank" rel="noopener">{ig_svg}<span>Instagram</span></a>
+              <a class="foot__social" href="https://www.instagram.com/charedefine" target="_blank" rel="noopener">{ig_svg}<span>Instagram</span></a>
         </div>
 
         <div class="foot__col">
@@ -1135,7 +1132,7 @@ a{{color:inherit}}
       "postalCode": "77036",
       "addressCountry": "US"
     }},
-    "telephone": "+1-678-814-3557",
+    "telephone": "+1-713-485-6158",
     "menu": "https://charedefinearcadia.toast.site/order/cha-redefine-houston",
     "acceptsReservations": false,
     "openingHoursSpecification": [{{
@@ -1180,7 +1177,7 @@ a{{color:inherit}}
 
 <nav class="orderbar" aria-label="Order">
   <a class="btn btn--solid" href="https://charedefinearcadia.toast.site/order/cha-redefine-houston" target="_blank" rel="noopener">Order now</a>
-  <a class="btn btn--ghost" href="tel:+16788143557">Call</a>
+  <a class="btn btn--ghost" href="tel:+17134856158">Call</a>
 </nav>
 """
 
