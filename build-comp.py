@@ -20,7 +20,13 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "comp.html")
 
 DRINK_PX = 440
-HERO_PX = 1600
+
+# The hero spans the full viewport width, so on a 2x display a 1440px layout
+# wants ~2880px of pixels. Toast's own copy of this banner is only 1920x1080,
+# so 1920 at high quality is as sharp as that source gets - going lower was
+# throwing away detail we already had. A larger original raises this ceiling.
+HERO_PX = 1920
+HERO_QUALITY = 86
 
 # Hero: prefer the untitled cup-lineup shot if it has been saved, otherwise
 # fall back to the Toast banner (which has promo text baked into the left side,
@@ -91,21 +97,26 @@ def hue_for(category):
     return DEFAULT_HUE
 
 
-def resize_to_data_uri(path, px, quality=70):
-    """Resize with sips (built into macOS) and return a base64 data URI."""
+def resize_to_data_uri(path, px, quality=70, keep_alpha=False):
+    """Resize with sips (built into macOS) and return a base64 data URI.
+
+    keep_alpha forces PNG out. JPEG has no alpha channel, so a transparent
+    logo run through the photo path would come back flattened onto black.
+    """
     if not os.path.exists(path):
         return None
+    fmt = "png" if keep_alpha else "jpeg"
     tmpdir = tempfile.mkdtemp()
     try:
-        tmp = os.path.join(tmpdir, "out.jpg")
+        tmp = os.path.join(tmpdir, f"out.{fmt}")
         shutil.copy(path, tmp)
-        subprocess.run(
-            ["sips", "-Z", str(px), "-s", "format", "jpeg",
-             "-s", "formatOptions", str(quality), tmp],
-            capture_output=True, check=False,
-        )
+        cmd = ["sips", "-Z", str(px), "-s", "format", fmt]
+        if not keep_alpha:
+            cmd += ["-s", "formatOptions", str(quality)]
+        subprocess.run(cmd + [tmp], capture_output=True, check=False)
         with open(tmp, "rb") as fh:
-            return "data:image/jpeg;base64," + base64.b64encode(fh.read()).decode()
+            mime = "image/png" if keep_alpha else "image/jpeg"
+            return f"data:{mime};base64," + base64.b64encode(fh.read()).decode()
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
 
@@ -120,7 +131,8 @@ def load_logo(candidates, px):
             with open(path, "rb") as fh:
                 b64 = base64.b64encode(fh.read()).decode()
             return f"data:image/svg+xml;base64,{b64}", rel
-        return resize_to_data_uri(path, px, quality=88), rel
+        # logos keep their alpha - never route them through the JPEG path
+        return resize_to_data_uri(path, px, keep_alpha=True), rel
     return None, None
 
 
@@ -296,7 +308,7 @@ def main():
     for cand in HERO_CANDIDATES:
         p = os.path.join(ROOT, cand)
         if os.path.exists(p):
-            hero_uri = resize_to_data_uri(p, HERO_PX, quality=68)
+            hero_uri = resize_to_data_uri(p, HERO_PX, quality=HERO_QUALITY)
             hero_src = cand
             break
     print(f"  hero: {hero_src}")
