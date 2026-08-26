@@ -315,9 +315,11 @@ def main():
     else:
         brand_html = '<a class="mark" href="#top">Cha Redefine</a>'
 
-    # The Toast banner has promo type baked into its left half; push the crop
-    # right so the cups fill the band instead of half a word.
-    hero_pos = "88% center" if hero_src == "assets/hero-toast.jpg" else "center"
+    # The Toast banner has "LONGAN & COCONUT" set across its upper left. In a
+    # tall band the full image width shows, so the crop has to bias downward
+    # instead of sideways to keep the promo type out of frame and the cups in.
+    # A photo without baked-in type (assets/hero-lineup.jpg) needs none of this.
+    hero_pos = "center 78%" if hero_src == "assets/hero-toast.jpg" else "center"
 
     # ---- signature cards -------------------------------------------------
     sig_html = []
@@ -675,28 +677,28 @@ a{{color:inherit}}
 @media(min-width:48rem){{.btn--compact{{padding:.6875rem 1.5rem;font-size:.9375rem}}}}
 
 /* ── hero ───────────────────────────────────── */
-.hero{{padding-top:clamp(2.5rem,6vw,4.5rem)}}
+.hero{{padding-top:clamp(2rem,4vw,3rem)}}
 .hero__type{{max-width:52rem}}
 .hero h1{{
   font-family:var(--serif);
   font-variant:small-caps;
   letter-spacing:.04em;
-  font-size:clamp(2.75rem,8vw,5.25rem);
-  line-height:1.02;
+  font-size:clamp(2.375rem,5.5vw,3.75rem);
+  line-height:1.05;
 }}
 .hero__lede{{
-  margin-top:1.25rem;
+  margin-top:1rem;
   font-size:var(--s1);
   color:var(--ink-2);
   max-width:44ch;
   line-height:1.6;
 }}
-.hero__actions{{margin-top:2rem;display:flex;flex-wrap:wrap;gap:.75rem}}
+.hero__actions{{margin-top:1.625rem;display:flex;flex-wrap:wrap;gap:.75rem}}
 .hero__figure{{
-  margin-top:clamp(2.5rem,5vw,3.5rem);
+  margin-top:clamp(1.75rem,3.5vw,2.5rem);
   width:100%;
   aspect-ratio:16/9;
-  max-height:clamp(260px,52vh,540px);
+  max-height:clamp(300px,62vh,680px);
   overflow:hidden;
   background:var(--sand);
 }}
