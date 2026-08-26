@@ -231,6 +231,23 @@ def main():
                    "shot as <b>assets/hero-lineup.jpg</b> and rebuild to swap it in."),
     )
 
+    # The artifact host wraps the fragment in its own document shell. Pass
+    # --standalone for a file that opens on its own by double-clicking, which
+    # is what you want when sending it to someone directly.
+    if "--standalone" in sys.argv:
+        head, rest = html.split('<header class="masthead">', 1)
+        html = (
+            '<!doctype html>\n<html lang="en">\n<head>\n'
+            '<meta charset="utf-8">\n'
+            '<meta name="viewport" content="width=device-width,initial-scale=1">\n'
+            '<meta name="description" content="Cha Redefine — craft boba, ceremonial grade '
+            'matcha and ONYX espresso on Bellaire Blvd in Houston Chinatown.">\n'
+            + head
+            + '</head>\n<body>\n<header class="masthead">'
+            + rest
+            + '\n</body>\n</html>\n'
+        )
+
     with open(OUT, "w", encoding="utf-8") as fh:
         fh.write(html)
     print(f"wrote {OUT}  ({os.path.getsize(OUT)/1_000_000:.1f} MB)")
